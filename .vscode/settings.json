@@ -3,7 +3,7 @@
     "python.analysis.typeCheckingMode": "strict",
     "python.analysis.extraPaths": [
         "${workspaceFolder}/src/main",
-        "${workspaceFolder}/src/ext/*/",
+        "${workspaceFolder}/src/ext/jose/",
         "${workspaceFolder}/src/backends/*/"
     ],
     "python.analysis.diagnosticSeverityOverrides": {

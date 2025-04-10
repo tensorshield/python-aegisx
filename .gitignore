@@ -1,4 +1,8 @@
 # Misc
+google.py
+google.token.json
+tmp.py
+token.json
 db.sqlite3
 *.sqlite3
 *.swp

@@ -1,0 +1,38 @@
+{
+    "name": "aegisx.backends.azure",
+    "description": "Microsoft Azure backend for AegisX",
+    "author": "Immortal Izzy",
+    "author_email": "immortal.izzy@tensorshield.ai",
+    "url": "https://github.com/tensorshield/python-aegisx",
+    "install_requires": [
+      "aegisx>0.0.1"
+    ],
+    "extras_require": {
+      "develop": [
+        "pytest",
+        "pytest_asyncio",
+        "coverage"
+      ]
+    },
+    "classifiers": [
+       "Development Status :: 4 - Beta",
+       "Environment :: Web Environment",
+       "Framework :: Pydantic :: 2",
+       "Intended Audience :: Developers",
+       "License :: OSI Approved :: MIT License",
+       "Operating System :: MacOS",
+       "Operating System :: POSIX",
+       "Operating System :: POSIX :: Linux",
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14",
+       "Programming Language :: Python :: 3 :: Only",
+       "Topic :: Communications",
+       "Topic :: File Formats :: JSON",
+       "Topic :: Internet :: WWW/HTTP",
+       "Topic :: Office/Business :: Financial",
+       "Topic :: Security",
+       "Topic :: Security :: Cryptography",
+       "Topic :: Software Development :: Libraries"
+    ]
+  }
+  
