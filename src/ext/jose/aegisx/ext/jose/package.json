@@ -1,0 +1,49 @@
+{
+    "name": "aegisx.ext.jose",
+    "description": "Javascript Object Signing and Encryption (JOSE)",
+    "author": "Immortal Izzy",
+    "author_email": "immortal.izzy@tensorshield.ai",
+    "url": "https://github.com/tensorshield/python-aegisx",
+    "install_requires": [
+      "aegisx",
+      "cryptography",
+      "pydantic>=2",
+      "libcanonical>=0.1.0"
+    ],
+    "extras_require": {
+      "develop": [
+        "jwcrypto",
+        "pyjwt",
+        "py-sr25519-bindings>=0.2.0,<1",
+        "substrate-interface",
+        "scalecodec>=1.2.10,<1.3"
+      ],
+      "sr25519": [
+        "scalecodec>=1.2.10,<1.3",
+        "py-sr25519-bindings>=0.2.0,<1"
+      ]
+    },
+    "classifiers": [
+       "Development Status :: 4 - Beta",
+       "Environment :: Web Environment",
+       "Framework :: Pydantic :: 2",
+       "Intended Audience :: Developers",
+       "License :: OSI Approved :: MIT License",
+       "Operating System :: MacOS",
+       "Operating System :: POSIX",
+       "Operating System :: POSIX :: Linux",
+       "Programming Language :: Python :: 3.11",
+       "Programming Language :: Python :: 3.12",
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14",
+       "Programming Language :: Python :: 3 :: Only",
+       "Topic :: Communications",
+       "Topic :: File Formats :: JSON",
+       "Topic :: Internet :: WWW/HTTP",
+       "Topic :: Office/Business :: Financial",
+       "Topic :: Security",
+       "Topic :: Security :: Cryptography",
+       "Topic :: Software Development :: Libraries"
+    ]
+  }
+  

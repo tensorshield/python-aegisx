@@ -1,0 +1,13 @@
+{
+    "terminal.integrated.fontSize": 14,
+    "python.analysis.typeCheckingMode": "strict",
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/src/main",
+        "${workspaceFolder}/src/ext/*/",
+        "${workspaceFolder}/src/backends/*/"
+    ],
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportMissingImports": "none",
+        "reportMissingTypeStubs": "none"
+    }
+}

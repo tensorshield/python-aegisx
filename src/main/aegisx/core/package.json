@@ -1,0 +1,38 @@
+{
+  "name": "aegisx",
+  "description": "Extensible cryptography framework for Python 3.11+",
+  "author": "Immortal Izzy",
+  "author_email": "immortal.izzy@tensorshield.ai",
+  "url": "https://github.com/tensorshield/python-aegisx",
+  "install_requires": [
+    "cryptography",
+    "pydantic>=2",
+    "libcanonical>=0.1.0"
+  ],
+  "extras_require": {
+    "develop": [
+      "pytest",
+      "pytest_asyncio",
+      "coverage"
+    ]
+  },
+  "classifiers": [
+    "Development Status :: 4 - Beta",
+    "Framework :: Pydantic :: 2",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Operating System :: POSIX",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Communications",
+    "Topic :: Office/Business :: Financial",
+    "Topic :: Security",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Software Development :: Libraries"
+  ]
+}
