@@ -1,4 +1,12 @@
 # Misc
+teamleader.py
+run-keycloak.sh
+keycloak.py
+google.py
+_google.py
+google.token.json
+tmp.py
+token.json
 db.sqlite3
 *.sqlite3
 *.swp

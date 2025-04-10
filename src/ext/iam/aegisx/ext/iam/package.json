@@ -1,0 +1,51 @@
+{
+    "name": "aegisx.ext.iam",
+    "description": "Identity and Access Management (IAM) for Python Web Applications",
+    "author": "Immortal Izzy",
+    "author_email": "immortal.izzy@tensorshield.ai",
+    "url": "https://github.com/tensorshield/python-aegisx",
+    "install_requires": [
+      "aegisx>=0.0.4",
+      "aegisx.ext.jose",
+      "aegisx.ext.rfc3161",
+      "cel-python",
+      "libcanonical>=0.1.0",
+      "pydantic>=2"
+    ],
+    "extras_require": {
+      "client": [
+        "httpx"
+      ],
+      "server": [
+        "fastapi",
+        "aegisx.ext.oauth[resource]"
+      ],
+      "develop": [
+        "pytest",
+        "pytest_asyncio",
+        "coverage"
+      ]
+    },
+    "entry_points": {
+      "aegisx.cli": ["iam = aegisx.ext.iam.cli:setup"]
+    },
+    "classifiers": [
+       "Development Status :: 4 - Beta",
+       "Environment :: Web Environment",
+       "Framework :: Pydantic :: 2",
+       "Intended Audience :: Developers",
+       "License :: OSI Approved :: MIT License",
+       "Operating System :: MacOS",
+       "Operating System :: POSIX",
+       "Operating System :: POSIX :: Linux",
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14",
+       "Programming Language :: Python :: 3 :: Only",
+       "Topic :: Communications",
+       "Topic :: Internet :: WWW/HTTP",
+       "Topic :: Office/Business :: Financial",
+       "Topic :: Security",
+       "Topic :: Software Development :: Libraries"
+    ]
+  }
+  

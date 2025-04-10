@@ -1,0 +1,31 @@
+{
+    "name": "aegisx.ext.cve",
+    "description": "Pinned dependencies for high-security environments",
+    "author": "Immortal Izzy",
+    "author_email": "immortal.izzy@tensorshield.ai",
+    "url": "https://github.com/tensorshield/python-aegisx",
+    "install_requires": [
+      "cryptography>=0.44.0"
+    ],
+    "extras_require": {
+      "develop": [],
+      "fastapi": [
+        "starlette>=0.40.0"
+      ]
+    },
+    "classifiers": [
+       "Development Status :: 4 - Beta",
+       "Intended Audience :: Developers",
+       "License :: OSI Approved :: MIT License",
+       "Operating System :: MacOS",
+       "Operating System :: POSIX",
+       "Operating System :: POSIX :: Linux",
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14",
+       "Programming Language :: Python :: 3 :: Only",
+       "Topic :: Office/Business :: Financial",
+       "Topic :: Security",
+       "Topic :: Software Development :: Libraries"
+    ]
+  }
+  

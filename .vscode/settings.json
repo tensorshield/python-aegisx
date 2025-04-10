@@ -3,7 +3,11 @@
     "python.analysis.typeCheckingMode": "strict",
     "python.analysis.extraPaths": [
         "${workspaceFolder}/src/main",
-        "${workspaceFolder}/src/ext/*/",
+        "${workspaceFolder}/src/ext/google/",
+        "${workspaceFolder}/src/ext/iam/",
+        "${workspaceFolder}/src/ext/jose/",
+        "${workspaceFolder}/src/ext/oauth/",
+        "${workspaceFolder}/src/ext/rfc3161/",
         "${workspaceFolder}/src/backends/*/"
     ],
     "python.analysis.diagnosticSeverityOverrides": {
