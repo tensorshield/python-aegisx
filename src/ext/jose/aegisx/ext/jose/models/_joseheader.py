@@ -1,5 +1,3 @@
-import binascii
-import json
 from typing import cast
 from typing import Any
 
@@ -9,7 +7,6 @@ from libcanonical.types import HTTPResourceLocator
 from libcanonical.utils.encoding import b64encode
 from libcanonical.utils.encoding import b64decode_json
 
-from aegisx.ext.jose.types import MalformedHeader
 from aegisx.ext.jose.types import JSONWebKeySetURL
 
 
@@ -18,10 +15,7 @@ class JOSEHeader(pydantic.BaseModel):
     @pydantic.model_validator(mode='before')
     def preprocess(cls, value: Any):
         if value and isinstance(value, str):
-            try:
-                value = {**b64decode_json(value), 'encoded': value} # type: ignore
-            except(TypeError, ValueError, binascii.Error, json.JSONDecodeError):
-                raise MalformedHeader
+            value = {**b64decode_json(value), 'encoded': value} # type: ignore
         return value
 
     @pydantic.field_validator('crit', mode='before', check_fields=False)
@@ -42,6 +36,8 @@ class JOSEHeader(pydantic.BaseModel):
                 for name, field in cls.model_fields.items()
             ])
             critical = set(value)
+            if len(critical) != len(value):
+                raise ValueError("The `crit` claim must not contain duplicates.")
             if (critical & forbidden_claims):
                 raise ValueError(f"The `crit` claim contains illegal values.")
             if (critical - known_claims):
@@ -49,8 +45,6 @@ class JOSEHeader(pydantic.BaseModel):
                 raise ValueError(
                     f"Header contains critical unknown claims: {str.join(', ', unknown)}"
                 )
-            if len(critical) != len(value):
-                raise ValueError("The `crit` claim must not contain duplicates.")
         return value
 
 

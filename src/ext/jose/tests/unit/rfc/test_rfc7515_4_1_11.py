@@ -28,3 +28,18 @@ async def test_unknown_critical_headers_raises_validationerror(
         .build(syntax=syntax, mode='python')
     with pytest.raises(pydantic.ValidationError):
         adapter.validate_python(token)
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("syntax", INPUT_FORMATS)
+async def test_unknown_critical_must_not_contain_duplicates(
+    adapter: pydantic.TypeAdapter[JOSEType],
+    sig: JSONWebKey,
+    syntax: TokenBuilder.SerializationFormat,
+):
+    token = await TokenBuilder(bytes)\
+        .payload(b'Hello world!')\
+        .sign(sig, alg='ES256', crit=['foo', 'foo'])\
+        .build(syntax=syntax, mode='python')
+    with pytest.raises(pydantic.ValidationError):
+        adapter.validate_python(token)

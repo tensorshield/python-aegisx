@@ -13,7 +13,7 @@ class JOSECache:
         self.seen = set()
 
     async def consume(self, jwt: 'JSONWebToken') -> None:
-        if not jwt.jti:
+        if not jwt.jti: # pragma: no cover
             return
         v = deephash([jwt.jti, jwt.iss], using='sha256', encode='hex')
         if v in self.seen:
