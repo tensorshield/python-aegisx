@@ -1,3 +1,4 @@
+import functools
 from typing import Generic
 from typing import Iterable
 from typing import TypeVar
@@ -6,9 +7,9 @@ import celpy # type: ignore
 import pydantic
 from aegisx.ext.jose import JSONWebKey
 from aegisx.ext.jose import JSONWebKeySet
-from aegisx.ext.jose import JWSCompactSerialization
 from aegisx.ext.jose import TokenBuilder
 from aegisx.ext.jose import TokenValidator
+from aegisx.ext.jose.types import JWSCompactEncoded
 from libcanonical.types import DigestSHA256
 
 from aegisx.ext.iam.types import PrincipalTypeVar
@@ -44,7 +45,7 @@ class IAMPolicy(pydantic.BaseModel, Generic[C, PrincipalTypeVar]):
         frozen=True
     )
 
-    signature: JWSCompactSerialization[IAMPolicyToken] | None = pydantic.Field(
+    signature: JWSCompactEncoded | None = pydantic.Field(
         default_factory=lambda: None
     )
 
@@ -52,11 +53,11 @@ class IAMPolicy(pydantic.BaseModel, Generic[C, PrincipalTypeVar]):
         default_factory=DigestSHA256
     )
 
-    @property
+    @functools.cached_property
     def principal(self):
         assert self.signature
-        assert self.signature.payload.iss
-        return self.signature.payload.iss
+        assert self.token.iss
+        return self.token.iss
 
     @property
     def roles(self) -> set[str]:
@@ -66,6 +67,11 @@ class IAMPolicy(pydantic.BaseModel, Generic[C, PrincipalTypeVar]):
             set[str]: A set of role strings used in the policy bindings.
         """
         return {x.role for x in self.bindings}
+
+    @functools.cached_property
+    def token(self):
+        assert self.signature
+        return self.signature.payload(IAMPolicyToken.model_validate)
 
     @pydantic.model_validator(mode='after')
     def compute_digest(self):
@@ -128,14 +134,12 @@ class IAMPolicy(pydantic.BaseModel, Generic[C, PrincipalTypeVar]):
             autoinclude={'iat', 'nbf'}
         )
         jws = await builder\
-            .compact()\
             .update(aud=f'//{service}')\
             .update(iss=principal)\
             .update(dig=str(self.digest))\
             .update(sub=target)\
-            .build()
-        self.signature = JWSCompactSerialization[IAMPolicyToken].model_validate(jws)
-        assert await self.signature.verify(key)
+            .build(syntax='compact')
+        self.signature = JWSCompactEncoded.validate(jws)
 
     async def verify(
         self,

@@ -1,12 +1,17 @@
 import binascii
 import json
 from typing import Any
+from typing import Callable
 from typing import ClassVar
+from typing import TypeVar
 
 from pydantic_core import PydanticCustomError
 from libcanonical.types import StringType
 from libcanonical.utils.encoding import b64decode_json
 from libcanonical.utils.encoding import b64decode
+
+
+T = TypeVar('T')
 
 
 class JWSCompactEncoded(StringType):
@@ -61,9 +66,16 @@ class JWSCompactEncoded(StringType):
             'signature': signature,
         }
 
+    def payload(self, validate: Callable[[bytes], T]) -> T:
+        _, payload, _ = str.split(self, '.')
+        return validate(str.encode(payload, 'ascii'))
+
     def with_payload(self, payload: str):
         protected, _, signature = str.split(self, '.')
         return JWSCompactEncoded(f'{protected}.{payload}.{signature}')
+
+    def __bytes__(self):
+        return str.encode(self, 'ascii')
 
     def __repr__(self):
         return f'<{type(self).__name__}: {str(self)}>'

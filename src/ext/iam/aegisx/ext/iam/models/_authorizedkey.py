@@ -5,7 +5,7 @@ from typing import Literal
 
 import pydantic
 from aegisx.ext.jose import JSONWebKey
-from aegisx.ext.jose import JWSCompactSerialization
+from aegisx.ext.jose.models import JWSCompactSerialization
 from libcanonical.types import EmailAddress
 
 from ._authorizedkeytoken import AuthorizedKeyToken
