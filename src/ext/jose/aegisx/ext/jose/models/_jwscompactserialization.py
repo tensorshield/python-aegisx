@@ -1,15 +1,19 @@
 from typing import Any
 from typing import Generic
 from typing import TypeVar
+from typing import TYPE_CHECKING
 
 import pydantic
 from libcanonical.types import Base64
 
 from aegisx.ext.jose.types import JWSCompactEncoded
+from .jwk import JSONWebKey
 from ._jwsheader import JWSHeader
 from ._jwsvalidationbase import JWSValidationBase
 from ._jsonwebtoken import JSONWebToken
 from ._signature import Signature
+if TYPE_CHECKING:
+    from aegisx.ext.jose.cache import JOSECache
 
 
 T = TypeVar('T', default=bytes, bound=bytes | JSONWebToken)
@@ -23,7 +27,7 @@ class JWSCompactSerialization(JWSValidationBase, Generic[T]):
     )
 
     signature: Base64 = pydantic.Field(
-        default=...
+        default=...,
     )
 
     payload: bytes = pydantic.Field(
@@ -34,7 +38,7 @@ class JWSCompactSerialization(JWSValidationBase, Generic[T]):
     def preprocess_protected(cls, value: str | None, info: pydantic.ValidationInfo):
         if not isinstance(value, str):
             raise ValueError(
-                'The JWS Protected Header must be a bas64-urlencoded '
+                'The JWS Protected Header must be a base64-urlencoded '
                 'string.'
             )
         return JWSHeader.model_validate(value, context=info.context)
@@ -74,3 +78,10 @@ class JWSCompactSerialization(JWSValidationBase, Generic[T]):
                 signature=self.signature,
             )
         ]
+
+    async def get_keys(
+        self,
+        cache: 'JOSECache',
+        thumbprints: list[str] | None = None
+    ) -> list[JSONWebKey]:
+        raise NotImplementedError

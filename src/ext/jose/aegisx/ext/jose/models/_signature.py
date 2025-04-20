@@ -1,11 +1,15 @@
 import functools
 from typing import Any
+from typing import TYPE_CHECKING
 
 import pydantic
 from libcanonical.types import Base64
 
+from aegisx.ext.jose.types import NotVerifiable
 from .jwk import JSONWebKey
 from ._jwsheader import JWSHeader
+if TYPE_CHECKING:
+    from aegisx.ext.jose.keyselector import KeySelector
 
 
 class Signature(pydantic.BaseModel):
@@ -27,6 +31,13 @@ class Signature(pydantic.BaseModel):
         assert self.protected
         assert self.protected.alg
         return self.protected.alg
+
+    @property
+    def crv(self):
+        if self.protected.alg and self.protected.alg.crv:
+            return self.protected.alg.crv
+        if self.protected.jwk and self.protected.jwk.alg:
+            return self.protected.jwk.alg.crv
 
     @property
     def cty(self):
@@ -71,6 +82,20 @@ class Signature(pydantic.BaseModel):
     def _header(self):
         assert isinstance(self.protected, Base64)
         return JWSHeader.model_validate_json(self.protected)
+
+    def candidates(self, selector: 'KeySelector'):
+        """Filter the given :class:`KeySelector` `selector` to keys
+        that can possibly verify this signature.
+        """
+        if not selector: # pragma: no cover
+            raise NotVerifiable
+        selected = selector.select(
+            algorithms={self.alg},
+            key=self.protected.jwk,
+            kid=self.protected.kid,
+            crv=self.crv
+        )
+        return list(selected)
 
     def get_signing_input(self, payload: bytes):
         assert self.protected.encoded

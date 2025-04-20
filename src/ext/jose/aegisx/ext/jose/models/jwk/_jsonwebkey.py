@@ -61,6 +61,10 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
         return self.root.crv
 
     @property
+    def exp(self):
+        return self.root.exp
+
+    @property
     def kid(self) -> str | None: # pragma: no cover
         return self.root.kid
 
@@ -71,6 +75,10 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
     @property
     def kty(self): # pragma: no cover
         return self.root.kty
+
+    @property
+    def nbf(self):
+        return self.root.nbf
 
     @property
     def public(self) -> Union['JSONWebKey', None]: # pragma: no cover
@@ -278,7 +286,7 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
         return hash(self.thumbprint('sha256'))
 
     def __repr__(self):
-        return f'<JSONWebKey: {{"kty": "{self.kty}", "thumbprint": "{self.thumbprint('sha256')}"}}>'
+        return f'<JSONWebKey: {{"kty": "{self.kty}", "alg": "{self.alg}", "use": "{self.use}", "thumbprint": "{self.thumbprint('sha256')}"}}>'
 
 
 # TODO: ugly

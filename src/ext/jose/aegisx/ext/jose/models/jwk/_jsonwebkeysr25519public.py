@@ -95,4 +95,7 @@ class JSONWebKeySR25519Public(JSONWebKeyBase[
         message: bytes,
         alg: JSONWebAlgorithm | None = None
     ) -> AwaitableBool:
-        return AwaitableBool(sr25519.verify(signature, message, self.x))
+        try:
+            return AwaitableBool(sr25519.verify(signature, message, self.x))
+        except ValueError:
+            return AwaitableBool(False)

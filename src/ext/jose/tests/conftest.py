@@ -67,12 +67,15 @@ def enc():
 
 @pytest.fixture(scope='session')
 def jwks_ec():
-    return JSONWebKeySet.generate(['ES256', 'ES256K'])
+    return JSONWebKeySet(keys=[
+        JSONWebKey.generate(alg='ES256'),
+        JSONWebKey.generate(alg='ES384'),
+    ])
 
 
 @pytest.fixture(scope='session')
 def jwks_rsa():
-    return JSONWebKeySet.generate(['RS256'])
+    return JSONWebKeySet(keys=[JSONWebKey.generate(alg='RS256')])
 
 
 @pytest.fixture(scope='session')

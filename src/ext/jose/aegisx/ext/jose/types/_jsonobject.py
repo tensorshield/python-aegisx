@@ -33,6 +33,10 @@ class JSONObject(dict[str, Any]):
                 core_schema.chain_schema([
                     core_schema.str_schema(),
                     core_schema.no_info_plain_validator_function(cls.validate),
+                ]),
+                core_schema.chain_schema([
+                    core_schema.is_instance_schema(dict),
+                    core_schema.no_info_plain_validator_function(cls),
                 ])
             ]),
             serialization=core_schema.plain_serializer_function_ser_schema(json.dumps)

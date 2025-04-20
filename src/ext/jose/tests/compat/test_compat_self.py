@@ -34,7 +34,7 @@ def jws_verify():
         signers: list[JSONWebKey],
         serialized: str
     ):
-        await TokenValidator(JSONWebToken | bytes)\
+        await TokenValidator(JSONWebToken | bytes, keys=signers)\
             .validate(serialized)
         return True
 

@@ -5,6 +5,7 @@ from ._forbiddenaudience import ForbiddenAudience
 from ._integrityviolation import IntegrityViolation
 from ._invalidpayload import InvalidPayload
 from ._invalidsignature import InvalidSignature
+from ._invalidsignature import NotVerifiable
 from ._invalidtoken import InvalidToken
 from ._jsonobject import JSONObject
 from ._jsonwebalgorithm import JSONWebAlgorithm
@@ -60,6 +61,7 @@ __all__: list[str] = [
     'MalformedPayload',
     'MissingAudience',
     'MissingPublicKey',
+    'NotVerifiable',
     'ThumbprintHashAlgorithm',
     'Undecryptable',
     'UntrustedIssuer',

@@ -23,7 +23,7 @@ def test_update(jwks_ec: JSONWebKeySet,):
     jwks = JSONWebKeySet()
     jwks.update(jwks_ec)
     assert len(jwks) == len(jwks_ec)
-    assert jwks.thumbprints() == jwks_ec.thumbprints()
+    assert jwks == jwks_ec
 
 
 def test_write(jwks_ec: JSONWebKeySet):
@@ -36,4 +36,4 @@ def test_fromfile(jwks_ec: JSONWebKeySet):
     fn = os.path.join(tempfile.gettempdir(), bytes.hex(os.urandom(16)))
     jwks_ec.write(fn)
     jwks = JSONWebKeySet.fromfile(fn)
-    assert jwks.thumbprints() == jwks_ec.thumbprints()
+    assert jwks == jwks_ec

@@ -56,7 +56,8 @@ class JSONWebKeyEllipticCurvePrivate(JSONWebKeyEllipticCurvePublic):
     def generate(
         cls,
         alg: JSONWebAlgorithm,
-        crv: str | None = None
+        crv: str | None = None,
+        **kwargs: Any
     ) -> 'JSONWebKeyEllipticCurvePrivate':
         crv = crv or alg.config.crv
         if crv is None:
@@ -67,6 +68,7 @@ class JSONWebKeyEllipticCurvePrivate(JSONWebKeyEllipticCurvePublic):
         k = generate_private_key(cls.get_curve(crv))
         n = k.private_numbers()
         return cls.model_validate({
+            **kwargs,
             **alg.config.params(),
             'crv': crv,
             'd': b64encode_int(n.private_value),

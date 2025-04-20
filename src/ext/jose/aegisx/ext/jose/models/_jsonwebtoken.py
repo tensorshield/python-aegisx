@@ -7,6 +7,7 @@ from typing import Iterable
 
 import pydantic
 import pydantic_core
+from pydantic_core import PydanticCustomError
 from libcanonical.types import HTTPResourceLocator
 from libcanonical.utils.encoding import b64encode
 from libcanonical.utils.encoding import b64decode_json
@@ -68,7 +69,23 @@ class JSONWebToken(pydantic.BaseModel):
     ):
         if isinstance(value, (bytes, str)):
             # Assume Base64 url encoding
-            value = b64decode_json(value)
+            try:
+                value = b64decode_json(value)
+            except Exception:
+                raise pydantic_core.PydanticCustomError(
+                    'jose.malformed.token',
+                    'The payload could not be decoded as a JSON Web '
+                    'Token (JWT). Ensure that the payload is a JSON '
+                    'object, encoded as urlsafe base64.'
+                )
+            if not isinstance(value, dict):
+                raise pydantic_core.PydanticCustomError(
+                    'jose.malformed.token',
+                    'The payload could not be decoded as a JSON Web '
+                    'Token (JWT) because the decoded value is not '
+                    'a JSON object.'
+                )
+
         return nxt(value)
 
     @pydantic.model_validator(mode='before')
@@ -119,9 +136,17 @@ class JSONWebToken(pydantic.BaseModel):
                 forbidden = claimed - allowed
                 match bool(forbidden):
                     case True:
-                        raise ValueError(f"audience not allowed: {str.join(', ', sorted(forbidden))}")
+                        raise PydanticCustomError(
+                            'jwt.aud.forbidden',
+                            f"audience not allowed: {str.join(', ', sorted(forbidden))}", # type: ignore
+                            info.context
+                        )
                     case False:
-                        raise ValueError(f"token audience must be one of: {str.join(', ', allowed)}")
+                        raise PydanticCustomError(
+                            'jwt.aud.missing',
+                            'The "aud" claim must be one of {allowed}',
+                            {'allowed': str.join(', ', allowed)}
+                        )
         return value
 
     @pydantic.field_validator('exp', mode='before')

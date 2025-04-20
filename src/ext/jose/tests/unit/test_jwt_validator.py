@@ -6,6 +6,7 @@ from aegisx.ext.jose import JSONWebKeySet
 from aegisx.ext.jose import TokenBuilder
 from aegisx.ext.jose import TokenValidator
 from aegisx.ext.jose import JSONWebToken
+from aegisx.ext.jose.types import ForbiddenAudience
 
 
 class TypedJWT1(JSONWebToken):
@@ -39,7 +40,7 @@ async def test_validator_requires_audience_intersection(sig: JSONWebKey):
         .update(foo='Hello world!')\
         .sign(sig)\
         .build()
-    with pytest.raises(pydantic.ValidationError):
+    with pytest.raises(ForbiddenAudience):
         await validator.validate(jws)
 
 

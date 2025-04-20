@@ -75,6 +75,7 @@ class TokenBuilder(Generic[T]):
         signers: list[JSONWebKey] | None = ...,
         autoinclude: set[str] | None = ...,
         replicate_claims: bool = False,
+        include_keys: bool = ...,
     ) -> None: ...
 
     # This second overload is for unsupported special forms (such as Annotated, Union, etc.)
@@ -89,6 +90,7 @@ class TokenBuilder(Generic[T]):
         signers: list[JSONWebKey] | None = ...,
         autoinclude: set[str] | None = ...,
         replicate_claims: bool = False,
+        include_keys: bool = ...,
     ) -> None: ...
 
     def __init__(
@@ -99,6 +101,7 @@ class TokenBuilder(Generic[T]):
         signers: list[JSONWebKey] | None = None,
         autoinclude: set[str] | None = None,
         replicate_claims: bool = False,
+        include_keys: bool = False
     ):
         self._adapter = pydantic.TypeAdapter(types)
         self._alg = None
@@ -111,6 +114,7 @@ class TokenBuilder(Generic[T]):
         self._enc = None
         self._epk = None
         self._format = 'compact'
+        self._include_keys = include_keys
         self._issuer = None
         self._jws_encoder = pydantic.TypeAdapter(JWSGeneralSerialization | JWSFlattenedSerialization | JWSCompactSerialization)
         self._mode = 'jose'
@@ -173,6 +177,8 @@ class TokenBuilder(Generic[T]):
                     exclude_unset=True,
                     exclude_none=True
                 )
+            if key.kid:
+                kwargs.setdefault('kid', key.kid)
             self._recipients[t] = TokenRecipient.fromkey(key, **kwargs)
         return self
 
@@ -379,6 +385,8 @@ class TokenBuilder(Generic[T]):
                     exclude_unset=True,
                     exclude_none=True
                 )
+            if key.kid:
+                kwargs.setdefault('kid', key.kid)
             signer = TokenKey[JWSHeaderDict].fromkey(key, **kwargs)
             if signer.protected.get('alg') is None:
                 raise TypeError('The "alg" parameter is required.')

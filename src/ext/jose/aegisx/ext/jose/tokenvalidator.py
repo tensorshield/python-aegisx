@@ -11,7 +11,9 @@ import pydantic
 from libcanonical.types import Base64
 from libcanonical.types import HTTPResourceLocator
 
+from aegisx.ext.jose.types import ForbiddenAudience
 from aegisx.ext.jose.types import InvalidSignature
+from aegisx.ext.jose.types import MalformedPayload
 from aegisx.ext.jose.types import MalformedEncoding
 from aegisx.ext.jose.types import MalformedObject
 from aegisx.ext.jose.types import JSONObject
@@ -35,8 +37,10 @@ JOSEGeneralType = Union[JWSGeneralSerialization | JWEGeneralSerialization]
 
 
 class TokenValidator(Generic[T]):
+    ForbiddenAudience = ForbiddenAudience
     InvalidSignature = InvalidSignature
     MalformedEncoding = MalformedEncoding
+    MalformedPayload = MalformedPayload
     MalformedObject = MalformedObject
     adapter: pydantic.TypeAdapter[T]
     audience: set[str]
@@ -211,9 +215,18 @@ class TokenValidator(Generic[T]):
     async def validate(self, token: Any) -> T:
         try:
             token = self.decoder.validate_python(token)
-        except pydantic.ValidationError:
-            raise self.MalformedEncoding
-        return await self.validate(token)
+            return await self.validate(token)
+        except pydantic.ValidationError as exception:
+            for error in exception.errors():
+                print(error)
+                match error['type']:
+                    case 'jose.malformed':
+                        raise self.MalformedEncoding
+                    case 'jose.malformed.token':
+                        raise self.MalformedPayload(error['msg'])
+                    case _:
+                        continue
+            raise # Should never happen
 
     async def validate_token(self, jwt: JSONWebToken):
         await self.cache.consume(jwt)
@@ -258,13 +271,38 @@ class TokenValidator(Generic[T]):
         return await self.validate(JWSCompactSerialization.model_validate(token))
 
     @validate.register
-    async def _(self, token: JWSCompactSerialization | JWSFlattenedSerialization | JWSGeneralSerialization) -> T: # type: ignore
-        if self._verify:
-            await self.verify(token.get_raw_payload(), *token.get_signatures())
-        return self.adapter.validate_python(
-            token.get_payload(),
-            context=self.get_context()
-        )
+    async def _(
+        self,
+        token: Union[
+            JWSCompactSerialization,
+            JWSFlattenedSerialization,
+            JWSGeneralSerialization
+        ]
+    ) -> T: # type: ignore
+        if self._verify and not (
+            await self.verify(
+                token.get_raw_payload(),
+                *token.get_signatures()
+            )
+        ):
+            raise InvalidSignature
+        try:
+            return self.adapter.validate_python(
+                token.get_payload(),
+                context=self.get_context()
+            )
+        except pydantic.ValidationError as exception:
+            for error in exception.errors():
+                match error['type']:
+                    case 'jwt.aud.forbidden':
+                        raise ForbiddenAudience(f'Audience "{error["input"]}" is not acceptable.')
+                    case 'jwt.aud.missing':
+                        raise ForbiddenAudience(error['msg'])
+                    case 'extra_forbidden':
+                        raise self.MalformedPayload(error['msg'])
+                    case _:
+                        continue
+            raise # Should not happen
 
     @validate.register
     async def _(self, token: JWEGeneralSerialization) -> T:
