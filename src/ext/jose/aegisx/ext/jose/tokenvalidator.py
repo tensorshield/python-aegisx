@@ -231,6 +231,9 @@ class TokenValidator(Generic[T]):
         self.subjects.update(subjects)
         return self
 
+    async def get_jwks(self, header: JWSHeader, payload: T):
+        return self.jwks
+
     @functools.singledispatchmethod
     async def validate(self, token: Any) -> T:
         try:
@@ -252,18 +255,19 @@ class TokenValidator(Generic[T]):
 
     async def verify(
         self,
-        payload: bytes,
+        raw_payload: bytes,
         signature: Signature,
         *signatures: Signature,
+        payload: T,
         jwks: JSONWebKeySet | None = None
     ) -> list[Signature]:
         valid: list[Signature] = []
-        jwks = jwks or self.jwks
+        jwks = jwks or await self.get_jwks(signature.protected, payload)
         match bool(signatures):
             case False:
                 if await self.verify_signature(
                     signature,
-                    signature.get_signing_input(payload),
+                    signature.get_signing_input(raw_payload),
                     jwks=jwks
                 ):
                     valid.append(signature)
@@ -272,7 +276,7 @@ class TokenValidator(Generic[T]):
                 for signature in [signature, *signatures]:
                     if await self.verify_signature(
                         signature,
-                        signature.get_signing_input(payload),
+                        signature.get_signing_input(raw_payload),
                         jwks=jwks
                     ):
                         valid.append(signature)
@@ -307,19 +311,20 @@ class TokenValidator(Generic[T]):
             JWSGeneralSerialization
         ]
     ) -> T: # type: ignore
-        if self._verify and not (
-            await self.verify(
-                token.get_raw_payload(),
-                *token.get_signatures()
-            )
-        ):
-            raise InvalidSignature
         try:
             payload = self.adapter.validate_python(
                 token.get_payload(),
                 context=self.get_context()
             )
             assert isinstance(payload, (bytes, JSONWebToken))
+            if self._verify and not (
+                await self.verify(
+                    token.get_raw_payload(),
+                    *token.get_signatures(),
+                    payload=payload
+                )
+            ):
+                raise InvalidSignature
 
             # If the payload is bytes at this point,
             # assumed the raw payload is return and
