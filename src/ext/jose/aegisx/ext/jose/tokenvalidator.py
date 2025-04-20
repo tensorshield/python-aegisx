@@ -231,7 +231,7 @@ class TokenValidator(Generic[T]):
         self.subjects.update(subjects)
         return self
 
-    async def get_jwks(self, header: JWSHeader, payload: T):
+    async def get_verification_jwks(self, header: JWSHeader, payload: T):
         return self.jwks
 
     @functools.singledispatchmethod
@@ -262,7 +262,7 @@ class TokenValidator(Generic[T]):
         jwks: JSONWebKeySet | None = None
     ) -> list[Signature]:
         valid: list[Signature] = []
-        jwks = jwks or await self.get_jwks(signature.protected, payload)
+        jwks = jwks or await self.get_verification_jwks(signature.protected, payload)
         match bool(signatures):
             case False:
                 if await self.verify_signature(
