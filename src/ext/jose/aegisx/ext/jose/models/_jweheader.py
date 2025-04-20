@@ -4,6 +4,7 @@ from typing import ClassVar
 import pydantic
 from libcanonical.types import Base64
 from libcanonical.types import Base64URLEncoded
+from libcanonical.types import HTTPResourceLocator
 from libcanonical.utils.encoding import b64decode_json
 
 from aegisx.ext.jose.types import JSONWebAlgorithm
@@ -106,8 +107,8 @@ class JWEHeader(JOSEHeader):
         default_factory=lambda: None,
     )
 
-    aud: str | None = pydantic.Field(
-        default_factory=lambda: None,
+    aud: set[HTTPResourceLocator | str] = pydantic.Field(
+        default_factory=set
     )
 
     sub: str | None = pydantic.Field(

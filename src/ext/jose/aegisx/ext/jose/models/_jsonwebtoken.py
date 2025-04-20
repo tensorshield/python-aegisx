@@ -14,6 +14,9 @@ from libcanonical.utils.encoding import b64decode_json
 
 
 class JSONWebToken(pydantic.BaseModel):
+    __typ__: ClassVar[str] = 'JWT'
+    __cty__: ClassVar[str] = 'JWT'
+
     model_config = {
         'extra': 'forbid',
         'populate_by_name': True

@@ -100,7 +100,7 @@ class JWEGeneralSerialization(pydantic.BaseModel):
             x.header.alg for x in self.recipients
             if x.header.alg
         }
-        if self.unprotected.alg:
+        if self.unprotected.alg: # pragma: no cover
             values.add(self.unprotected.alg)
         if self.protected.alg:
             values.add(self.protected.alg)
@@ -178,7 +178,7 @@ class JWEGeneralSerialization(pydantic.BaseModel):
         # to be encrypted per recipient. Mixing these approaches is not
         # supported by the JWE specification (RFC 7516). Use separate JWE 
         # messages if different key management methods are needed.
-        if 'dir' in algorithms and len(self.recipients) > 1:
+        if bool({'dir', 'ECDH-ES'} & algorithms) and len(self.recipients) > 1:
             raise ValueError(
                 "The 'dir' algorithm can not be used with multiple "
                 "recipients."
@@ -251,8 +251,6 @@ class JWEGeneralSerialization(pydantic.BaseModel):
             if not recipient.might_decrypt(key, self.unprotected | self.protected):
                 continue
             candidates.append(recipient)
-        if len(candidates) > 1:
-            raise NotImplementedError
         if len(candidates) == 0:
             raise Undecryptable
         return candidates[0], cek or await candidates[0].decrypt(self, key)

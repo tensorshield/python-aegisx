@@ -60,6 +60,7 @@ class TokenBuilder(Generic[T]):
     _protected: dict[str, Any]
     _recipients: OrderedDict[str, TokenRecipient]
     _signers: OrderedDict[str, TokenKey[JWSHeaderDict]]
+    _typ: str | None
     _unprotected: dict[str, Any]
 
     @property
@@ -76,6 +77,7 @@ class TokenBuilder(Generic[T]):
         autoinclude: set[str] | None = ...,
         replicate_claims: bool = False,
         include_keys: bool = ...,
+        typ: str | None = None,
     ) -> None: ...
 
     # This second overload is for unsupported special forms (such as Annotated, Union, etc.)
@@ -91,6 +93,7 @@ class TokenBuilder(Generic[T]):
         autoinclude: set[str] | None = ...,
         replicate_claims: bool = False,
         include_keys: bool = ...,
+        typ: str | None = None,
     ) -> None: ...
 
     def __init__(
@@ -101,7 +104,8 @@ class TokenBuilder(Generic[T]):
         signers: list[JSONWebKey] | None = None,
         autoinclude: set[str] | None = None,
         replicate_claims: bool = False,
-        include_keys: bool = False
+        include_keys: bool = False,
+        typ: str | None = None,
     ):
         self._adapter = pydantic.TypeAdapter(types)
         self._alg = None
@@ -127,6 +131,7 @@ class TokenBuilder(Generic[T]):
             (k.thumbprint('sha256'), TokenKey[JWSHeaderDict].fromkey(k))
             for k in (signers or [])]
         )
+        self._typ = typ
         self._unprotected = {}
 
     def audience(self, audience: set[str] | str):
@@ -135,28 +140,19 @@ class TokenBuilder(Generic[T]):
         self._audience.update(map(HTTPResourceLocator.validate, audience))
         return self
 
-    def compact(self):
-        if len(self._signers) > 1:
-            raise TypeError('Can not use compact encoding with multiple signers.')
-        self._compact = True
-        return self
-
     def encrypt(
         self,
         key: JSONWebKey,
         include: bool = False,
-        x5t_sha256: str | None = None,
         **kwargs: Unpack[JWEHeaderDict]
     ):
         if not self._can_add_recipients:
             raise TypeError('No more recipients may be added.')
-        if self._recipients and self._compact:
-            raise TypeError('Can not use compact encoding with multiple signers.')
         alg = kwargs.get('alg') or key.alg
-        enc = kwargs.get('enc')
-        if alg is None:
+        enc = kwargs.pop('enc', None)
+        if alg is None: # pragma: no cover
             raise TypeError('The "alg" parameter is required.')
-        if enc is None:
+        if enc is None: # pragma: no cover
             raise TypeError('The "enc" parameter is required.')
         if self._enc is None:
             self.generate_cek(
@@ -168,24 +164,19 @@ class TokenBuilder(Generic[T]):
         t = key.thumbprint('sha256')
         recipient = self._recipients.get(t)
         if recipient is None:
-            kwargs.update({'alg': alg, 'enc': enc})
-            if x5t_sha256 is not None:
-                kwargs['x5t#S256'] = x5t_sha256
+            kwargs.update({'alg': alg})
             if (include or self._include_keys) and key.public is not None:
                 kwargs['jwk'] = key.public.model_dump(
                     exclude_defaults=True,
                     exclude_unset=True,
                     exclude_none=True
                 )
-            if key.kid:
-                kwargs.setdefault('kid', key.kid)
-            if key.x5t:
-                kwargs.setdefault('x5t', key.x5t)
+            key.add_to_header(kwargs, include=include or self._include_keys)
             self._recipients[t] = TokenRecipient.fromkey(key, **kwargs)
         return self
 
     def generate_cek(self, key: JSONWebKey, alg: JSONWebAlgorithm, enc: JSONWebAlgorithm):
-        if self._cek is not None:
+        if self._cek is not None: # pragma: no cover
             raise ValueError(
                 "Can not generate a new Content Encryption Key (CEK) "
                 "as its already declared."
@@ -211,77 +202,69 @@ class TokenBuilder(Generic[T]):
                 self._cek = JSONWebKey.cek(alg, enc)
 
     def issuer(self, iss: HTTPResourceLocator | str):
-        if not isinstance(iss, HTTPResourceLocator):
+        if not isinstance(iss, HTTPResourceLocator): # type: ignore
             iss = HTTPResourceLocator.validate(iss)
         self._issuer = iss
         return self
 
-    def payload(self, payload: bytes | JSONWebToken, cty: str | None = None):
-        if self._claims:
-            raise TypeError(
+    def payload(
+        self,
+        payload: bytes | JSONWebToken,
+        typ: str | None = None,
+        cty: str | None = None
+    ):
+        if self._claims: # type: ignore
+            raise TypeError( # pragma: no cover
                 'Can not set payload when a structured payload is specified.'
             )
+        if typ is not None:
+            self._typ = self._typ or typ
         if cty is not None:
             self._content_type = cty
         if isinstance(payload, JSONWebToken):
             payload = bytes(payload)
-            self._content_type = 'JWT'
         self._payload = payload
         return self
 
-    def replicate(self, header: JWEHeader):
+    def replicate(self, header: JWEHeader, token: JSONWebToken):
         """Replicate public claims in the JWE Protected Header."""
         if self._replicate_claims:
-            header.iss = self._claims.get('iss')
-            header.aud = self._claims.get('aud')
-            header.sub = self._claims.get('sub')
+            header.iss = token.iss
+            header.aud = token.aud
+            header.sub = token.sub
 
-    def serialize(
+    def serialize_payload(
         self,
-        obj: JWEGeneralSerialization | JWSGeneralSerialization,
-        mode: Literal['python', 'jose', 'json', 'auto'] = 'auto',
-        syntax: SerializationFormat = 'compact',
-        encode: bool = False
-    ):
-        match mode:
-            case 'auto':
-                return obj.model_dump_json(
-                    context={'syntax': syntax, 'encode': encode},
-                    exclude_defaults=True,
-                    exclude_none=True,
-                    exclude_unset=True
-                )
-            case 'jose':
-                if encode:
-                    raise TypeError(
-                        'Can not set encode=True when using "jose" '
-                        'serialization mode.'
-                    )
-                return obj
-            case 'json':
-                return obj.model_dump_json(
-                    context={'syntax': syntax, 'encode': encode},
-                    exclude_defaults=True,
-                    exclude_none=True,
-                    exclude_unset=True
-                )
-            case 'python':
-                return obj.model_dump(
-                    context={'syntax': syntax, 'encode': encode},
-                    mode='json',
-                    exclude_defaults=True,
-                    exclude_none=True,
-                    exclude_unset=True
-                )
-
-    def serialize_payload(self, payload: T) -> tuple[bytes, dict[str, Any]]:
+        payload: T,
+        b64: bool = False
+    ) -> tuple[bytes, dict[str, Any]]:
         claims: dict[str, Any] = {}
+        now = int(time.time())
         if isinstance(payload, JSONWebToken):
-            claims['typ'] = self._content_type or 'jwt'
+            claims['typ'] = self._typ or payload.__typ__
+            if self._content_type:
+                claims['cty'] = self._content_type
+            if self._audience:
+                payload.aud = self._audience
+            if self._issuer:
+                payload.iss = self._issuer
+            for claim in self._autoinclude:
+                match claim:
+                    case 'iat':
+                        payload.iat = now
+                    case 'nbf':
+                        payload.nbf = now
+                    case _: # pragma: no cover
+                        raise NotImplementedError(
+                            f'Claim "{claim}" is not a valid argument for autoinclude.'
+                        )
             encoded = bytes(payload)
         else:
+            claims['typ'] = self._typ or 'octet-stream'
             claims['cty'] = self._content_type or 'octet-stream'
-            encoded = b64encode(bytes(payload))
+            encoded = bytes(payload)
+            if b64:
+                encoded = b64encode(payload)
         return encoded, claims
 
     def serialize_jwe(
@@ -320,7 +303,7 @@ class TokenBuilder(Generic[T]):
                 if mode in {'auto'}:
                     encoded = json.dumps(encoded)
 
-        if isinstance(encoded, str) and encode:
+        if isinstance(encoded, str) and encode: # type: ignore
             encoded = str.encode(encoded, encoding)
         return encoded
 
@@ -374,34 +357,22 @@ class TokenBuilder(Generic[T]):
         self,
         key: JSONWebKey,
         include: bool = False,
-        x5t_sha256: str | None = None,
         **kwargs: Unpack[JWSHeaderDict]
     ):
-        if self._signers and self._compact:
+        if self._signers and self._compact: # pragma: no cover
             raise TypeError('Can not use compact encoding with multiple signers.')
         t = key.thumbprint('sha256')
         signer = self._signers.get(t)
         if signer is None:
-            if x5t_sha256 is not None:
-                kwargs['x5t#S256'] = x5t_sha256
-            if (include or self._include_keys) and key.public is not None:
-                kwargs['jwk'] = key.public.model_dump(
-                    exclude_defaults=True,
-                    exclude_unset=True,
-                    exclude_none=True
-                )
-            if key.kid:
-                kwargs.setdefault('kid', key.kid)
-            if key.x5t:
-                kwargs.setdefault('x5t', key.x5t)
+            key.add_to_header(kwargs, include=include or self._include_keys)
             signer = TokenKey[JWSHeaderDict].fromkey(key, **kwargs)
-            if signer.protected.get('alg') is None:
+            if signer.protected.get('alg') is None: # pragma: no cover
                 raise TypeError('The "alg" parameter is required.')
             self._signers[t] = signer
         return self
 
     def update(self, claims: dict[str, Any] | None = None, /, **kwargs: Any):
-        if self._payload:
+        if self._payload: # pragma: no cover
             raise TypeError(
                 'Can not set claims when a binary payload is specified.'
             )
@@ -409,23 +380,23 @@ class TokenBuilder(Generic[T]):
         self._claims.update({k: v for k, v in kwargs.items() if v is not None})
         return self
 
-    @overload
+    @overload # pragma: no cover
     async def build(self, mode: Literal['python'], syntax: SerializationFormat = ...) -> dict[str, Any]:
         ...
 
-    @overload
+    @overload # pragma: no cover
     async def build(self, mode: Literal['json'], syntax: SerializationFormat = ...) -> JWEGeneralSerialization | JWSGeneralSerialization:
         ...
 
-    @overload
+    @overload # pragma: no cover
     async def build(self, mode: Literal['jose'], syntax: SerializationFormat = ...) -> str:
         ...
 
-    @overload
+    @overload # pragma: no cover
     async def build(self) -> str:
         ...
 
-    @overload
+    @overload # pragma: no cover
     async def build(self, mode: SerializationMode = ..., syntax: SerializationFormat = ...) -> str:
         ...
 
@@ -434,30 +405,10 @@ class TokenBuilder(Generic[T]):
         mode: Literal['python', 'jose', 'json', 'auto'] = 'auto',
         syntax: SerializationFormat = 'compact'
     ) -> bytes | str | dict[str, Any] | JWEGeneralSerialization | JWSGeneralSerialization:
-        now = int(time.time())
-        for claim in self._autoinclude:
-            match claim:
-                case 'iat':
-                    self.update(iat=now)
-                case 'nbf':
-                    self.update(nbf=now)
-                case _:
-                    raise NotImplementedError(
-                        f'Claim "{claim}" is not a valid argument for autoinclude.'
-                    )
         claims = self._claims or {}
-        if self._audience:
-            claims['aud'] = self._audience
-        if self._issuer:
-            claims['iss'] = self._issuer
-        if not claims and not self._payload:
+        if not claims and not self._payload: # pragma: no cover
             raise TypeError('Can not build an empty object.')
         payload = self._adapter.validate_python(claims or self._payload)
-        if isinstance(payload, JSONWebToken):
-            if self._audience:
-                payload.aud = self._audience
-            if self._issuer:
-                payload.iss = self._issuer
         return await self.build_jose(payload, mode=mode, syntax=syntax) # type: ignore
 
     async def build_jose(
@@ -466,7 +417,9 @@ class TokenBuilder(Generic[T]):
         mode: SerializationMode,
         syntax: SerializationFormat
     ):
-        if syntax == 'compact' and len(self._signers) > 1 and not self._recipients:
+        if syntax == 'compact'\
+        and len(self._signers) > 1\
+        and not self._recipients: # pragma: no cover
             raise ValueError(
                 "JWS Compact Encoding can not be used with multiple signers."
             )
@@ -476,10 +429,8 @@ class TokenBuilder(Generic[T]):
             # object.
             return self._adapter.validate_python(payload)
 
-        encoded, claims = self.serialize_payload(payload)
+        encoded, claims = self.serialize_payload(payload, b64=not self._recipients)
         token: dict[str, Any] | JWEGeneralSerialization | JWSGeneralSerialization | None = None
-        if self._content_type is not None:
-            claims['cty'] = self._content_type
         if self._signers:
             token = {
                 'payload': encoded,
@@ -522,16 +473,14 @@ class TokenBuilder(Generic[T]):
                 protected.cty = 'application/octet-stream'
             if isinstance(payload, JSONWebToken):
                 pt = bytes(payload)
-                protected.typ = 'JWT'
+                protected.typ = self._typ or payload.__typ__
                 if token is not None:
-                    protected.cty = "JWT"
-                self.replicate(protected)
+                    protected.cty = payload.__cty__
+                self.replicate(protected, payload)
             if token is not None:
                 pt = self.serialize_jws(token, mode='auto', encode=True)
                 assert isinstance(pt, bytes)
 
-            if self._content_type:
-                protected.cty = self._content_type
             assert isinstance(pt, bytes)
             self._plaintext = pt
             result = await self._cek.encrypt(

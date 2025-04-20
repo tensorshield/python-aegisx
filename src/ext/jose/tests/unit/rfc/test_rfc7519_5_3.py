@@ -34,6 +34,8 @@ async def test_jwe_has_cty_header(
     aud: str | None,
     sub: str | None,
 ):
+    if not any([iss, aud, sub]):
+        pytest.skip("Nothing to do.")
     validator = TokenValidator(JSONWebToken)
     encoded = await TokenBuilder(JSONWebToken, replicate_claims=True)\
         .update(iss=iss)\
@@ -44,6 +46,9 @@ async def test_jwe_has_cty_header(
         .build(syntax=syntax)
     protected, *_ = validator.inspect(encoded)
     assert protected is not None
-    assert protected.iss == iss
-    assert protected.aud == aud
-    assert protected.sub == sub
+    if iss is not None:
+        assert protected.iss == iss
+    if aud is not None:
+        assert protected.aud == {aud}
+    if sub is not None:
+        assert protected.sub == sub

@@ -10,6 +10,7 @@ from libcanonical.types import AwaitableBytes
 
 from aegisx.ext.jose.types import EncryptionResult
 from aegisx.ext.jose.types import JSONWebAlgorithm
+from aegisx.ext.jose.types import JOSEHeaderDict
 from aegisx.ext.jose.types import ThumbprintHashAlgorithm
 from ._jsonwebkeyedwardscurveprivate import JSONWebKeyEdwardsCurvePrivate
 from ._jsonwebkeyedwardscurvepublic import JSONWebKeyEdwardsCurvePublic
@@ -104,6 +105,10 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
     @property
     def x5t(self):
         return self.root.x5t
+
+    @property
+    def x5t_s256(self):
+        return self.root.x5t_s256
 
     @classmethod
     def cek(cls, alg: JSONWebAlgorithm, enc: JSONWebAlgorithm):
@@ -209,6 +214,31 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
     def __init__(self, **kwargs: Any):
         # Only here to suppress type warnings.
         super().__init__(**kwargs) # type: ignore
+
+    def add_to_header(
+        self,
+        header: JOSEHeaderDict,
+        include: bool = False
+    ) -> None:
+        """Updates a mapping of JOSE Header claims with the claims from the
+        :class:~`JSONWebKey`.
+        """
+        if include and self.public:
+            header['jwk'] = self.public.model_dump(
+                mode='json',
+                exclude_defaults=True,
+                exclude_none=True,
+                exclude_unset=True
+            )
+        header.update(
+            self.root.model_dump(  # type: ignore
+                mode='json',
+                include={'kid', 'x5t', 'x5t_sha256', 'x5c', 'x5u', 'jku'},
+                exclude_defaults=True,
+                exclude_none=True,
+                exclude_unset=True
+            )
+        )
 
     def can_verify(self, alg: JSONWebAlgorithm | None):
         """Return a boolean indicating if the key can verify a signature

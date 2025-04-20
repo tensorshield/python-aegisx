@@ -1,3 +1,4 @@
+import base64
 import functools
 import time
 from typing import overload
@@ -9,9 +10,7 @@ from typing import TypeVar
 from typing import Union
 
 import pydantic
-from libcanonical.types import Base64
 from libcanonical.types import HTTPResourceLocator
-from libcanonical.utils.encoding import b64decode
 
 from aegisx.ext.jose.types import ForbiddenAudience
 from aegisx.ext.jose.types import InvalidSignature
@@ -104,7 +103,7 @@ class TokenValidator(Generic[T]):
 
     def __init__(
         self,
-        types: Any = Base64,
+        types: Any = bytes,
         *,
         audience: set[str] | str | None = None,
         issuer: set[str] | str | None = None,
@@ -239,7 +238,6 @@ class TokenValidator(Generic[T]):
             return await self.validate(token)
         except pydantic.ValidationError as exception:
             for error in exception.errors():
-                print(error)
                 match error['type']:
                     case 'jose.malformed':
                         raise self.MalformedEncoding
@@ -318,7 +316,7 @@ class TokenValidator(Generic[T]):
             # assumed the raw payload is return and
             # decode from urlsafe b64.
             if isinstance(payload, bytes):
-                payload = bytes(b64decode(payload))
+                payload = base64.urlsafe_b64decode(bytes(payload))
             assert isinstance(payload, (bytes, JSONWebToken))
             return payload
         except pydantic.ValidationError as exception:

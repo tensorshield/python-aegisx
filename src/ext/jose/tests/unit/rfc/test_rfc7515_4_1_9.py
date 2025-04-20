@@ -22,9 +22,9 @@ async def test_typ_is_interpreted_with_qualname(
     syntax: TokenBuilder.SerializationFormat,
     typ: str
 ):
-    token = await TokenBuilder(bytes)\
+    token = await TokenBuilder(bytes, typ=typ)\
         .payload(b'Hello world!')\
-        .sign(sig, alg='ES256', typ=typ)\
+        .sign(sig, alg='ES256')\
         .build(syntax=syntax, mode='python')
     obj = adapter.validate_python(token)
     for signature in obj.get_signatures():

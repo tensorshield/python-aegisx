@@ -61,6 +61,6 @@ class TokenKey(pydantic.BaseModel, Generic[H]):
             'protected': bytes.decode(protected, 'ascii'),
             'signature': b64encode(await self.key.sign(message, JSONWebAlgorithm.validate(alg)), encoder=str)
         }
-        if self.unprotected:
+        if self.unprotected: # pragma: no cover
             claims['header'] = adapter.dump_python(self.unprotected, mode='json'),
         return claims

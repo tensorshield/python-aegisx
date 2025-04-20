@@ -24,7 +24,7 @@ async def test_matching_x5t_s256_is_accepted(
     )
     token = await TokenBuilder(bytes)\
         .payload(b'Hello world!')\
-        .sign(key, alg='ES256', x5c=chain, x5t_sha256=t.decode('ascii'))\
+        .sign(key, alg='ES256', x5c=chain, x5t_s256=t.decode('ascii'))\
         .build(syntax=syntax, mode='python')
     adapter.validate_python(token)
 
@@ -42,7 +42,7 @@ async def test_mismatching_x5t_s256_is_rejected(
     )
     token = await TokenBuilder(bytes)\
         .payload(b'Hello world!')\
-        .sign(key, alg='ES256', x5c=chain, x5t_sha256=t.decode('ascii'))\
+        .sign(key, alg='ES256', x5c=chain, x5t_s256=t.decode('ascii'))\
         .build(syntax=syntax, mode='python')
     with pytest.raises(pydantic.ValidationError):
         adapter.validate_python(token)

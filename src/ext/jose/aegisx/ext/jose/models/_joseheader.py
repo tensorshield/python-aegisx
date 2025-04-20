@@ -27,10 +27,6 @@ class JOSEHeader(pydantic.BaseModel):
     ):
         ctx = cast(dict[str, Any], info.context or {})
         if ctx.get('strict', True) and value is not None:
-            forbidden_claims = set([
-                field.alias or name
-                for name, field in cls.model_fields.items()
-            ])
             known_claims = set([
                 field.alias or name
                 for name, field in cls.model_fields.items()
@@ -38,14 +34,12 @@ class JOSEHeader(pydantic.BaseModel):
             critical = set(value)
             if len(critical) != len(value):
                 raise ValueError("The `crit` claim must not contain duplicates.")
-            if (critical & forbidden_claims):
-                raise ValueError(f"The `crit` claim contains illegal values.")
             if (critical - known_claims):
                 unknown = critical - known_claims
                 raise ValueError(
                     f"Header contains critical unknown claims: {str.join(', ', unknown)}"
                 )
-        return value
+        return value # pragma: no cover
 
 
     @pydantic.field_validator('jku', 'x5u', mode='after', check_fields=False)

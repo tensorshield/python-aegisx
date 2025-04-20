@@ -46,9 +46,6 @@ class TokenRecipient(pydantic.BaseModel):
         }
         return {k: bytes.decode(v, 'ascii') for k, v in jwe.items() if v}
 
-    def is_direct(self):
-        return self.header.alg in {'dir', 'ECDH'}
-
     async def encrypt(self, cek: JSONWebKey):
         if not self.alg.is_direct():
             result = await self.encrypt_cek(self.alg, self.kek, cek)

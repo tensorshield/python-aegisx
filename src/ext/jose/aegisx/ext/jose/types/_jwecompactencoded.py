@@ -19,7 +19,7 @@ class JWECompactEncoded(StringType):
     @classmethod
     def validate(cls, v: str):
         if not v.count('.') == 4:
-            raise ValueError("Invalid JWS Compact Encoding.")
+            raise ValueError("Invalid JWE Compact Encoding.")
         return cls(v)
 
     def compact(self): # pragma: no cover

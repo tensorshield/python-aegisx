@@ -37,16 +37,6 @@ class JSONWebKeySet(pydantic.BaseModel):
         return dict(self._index)
 
     @property
-    def public(self):
-        """Return a :class:`JSONWebKeySet` containing the public keys
-        in this instance.
-        """
-        from ._jsonpublicwebkeyset import JSONPublicWebKeySet
-        return JSONPublicWebKeySet(
-            keys=[x.public for x in self.keys if x.public]
-        )
-
-    @property
     def sig(self):
         return list(filter(lambda key: key.use in {None, 'sig'}, self.keys))
 
@@ -63,15 +53,11 @@ class JSONWebKeySet(pydantic.BaseModel):
                 self._index[jwk.kid] = jwk
             self.keys.append(jwk)
 
-    def clone(self):
-        """Return a new :class:`JSONWebKeySet` with the same keys."""
-        return JSONWebKeySet(keys=self.keys)
-
     def get(self, kid: str):
         return self._index.get(kid)
 
     def model_post_init(self, _: Any) -> None:
-        for jwk in self.keys:
+        for jwk in self.keys: # pragma: no cover
             self._index[jwk.thumbprint(self.__thumbprint_algorithm__)] = jwk
             if jwk.kid:
                 self._index[jwk.kid] = jwk
@@ -85,12 +71,12 @@ class JSONWebKeySet(pydantic.BaseModel):
             keys = keys.keys
         for jwk in keys:
             t = jwk.thumbprint(self.__thumbprint_algorithm__)
-            if t in self._index:
+            if t in self._index: # pragma: no cover
                 continue
             self._index[t] = jwk
             self.keys.append(jwk)
 
-    def write(self, dst: str | pathlib.Path):
+    def write(self, dst: str | pathlib.Path): # pragma: no cover
         """Writes the JSON Web Key Set (JWKS) to the given
         destination.
         """

@@ -7,6 +7,7 @@ from ._invalidpayload import InvalidPayload
 from ._invalidsignature import InvalidSignature
 from ._invalidsignature import NotVerifiable
 from ._invalidtoken import InvalidToken
+from ._joseheaderdict import JOSEHeaderDict
 from ._jsonobject import JSONObject
 from ._jsonwebalgorithm import JSONWebAlgorithm
 from ._jsonwebkeyseturl import JSONWebKeySetURL
@@ -42,6 +43,7 @@ __all__: list[str] = [
     'IntegrityViolation',
     'InvalidSignature',
     'InvalidToken',
+    'JOSEHeaderDict',
     'JSONObject',
     'JSONWebAlgorithm',
     'JSONWebKeySetURL',
