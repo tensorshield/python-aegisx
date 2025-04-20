@@ -254,14 +254,17 @@ class TokenValidator(Generic[T]):
         self,
         payload: bytes,
         signature: Signature,
-        *signatures: Signature
+        *signatures: Signature,
+        jwks: JSONWebKeySet | None = None
     ) -> list[Signature]:
         valid: list[Signature] = []
+        jwks = jwks or self.jwks
         match bool(signatures):
             case False:
                 if await self.verify_signature(
                     signature,
-                    signature.get_signing_input(payload)
+                    signature.get_signing_input(payload),
+                    jwks=jwks
                 ):
                     valid.append(signature)
             case True:
@@ -269,13 +272,19 @@ class TokenValidator(Generic[T]):
                 for signature in [signature, *signatures]:
                     if await self.verify_signature(
                         signature,
-                        signature.get_signing_input(payload)
+                        signature.get_signing_input(payload),
+                        jwks=jwks
                     ):
                         valid.append(signature)
         return valid
 
-    async def verify_signature(self, signature: Signature, payload: bytes) -> bool:
-        return await self.jwks.verify(signature, payload)
+    async def verify_signature(
+        self,
+        signature: Signature,
+        payload: bytes,
+        jwks: JSONWebKeySet
+    ) -> bool:
+        return await jwks.verify(signature, payload)
 
     @validate.register
     async def _(self, token: JSONObject) -> T:
