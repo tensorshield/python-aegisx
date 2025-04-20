@@ -1,9 +1,9 @@
+from aegisx.ext.jose import TokenValidator
+from aegisx.ext.jose.models import JWSHeader
+from libcanonical.types import HTTPResourceLocator
+
 from aegisx.ext.oauth.models import OIDCToken
 from aegisx.ext.oauth.models import ServerMetadata
-from aegisx.ext.jose import JSONWebSignature
-from aegisx.ext.jose import Signature
-from aegisx.ext.jose import TokenValidator
-from libcanonical.types import HTTPResourceLocator
 
 
 class OIDCTokenValidator(TokenValidator[OIDCToken]):
@@ -19,14 +19,14 @@ class OIDCTokenValidator(TokenValidator[OIDCToken]):
             issuer=issuer
         )
 
-    async def verify(
+    async def get_verification_jwks(
         self,
-        jws: JSONWebSignature,
+        header: JWSHeader,
         payload: OIDCToken
-    ) -> Signature | None:
+    ):
         jwks = self.jwks
         if isinstance(payload.iss, HTTPResourceLocator)\
         and self.is_trusted_issuer(payload.iss):
             metadata = await ServerMetadata.get(payload.iss)
             jwks = metadata.jwks
-        return await jwks.verify(jws)
+        return jwks

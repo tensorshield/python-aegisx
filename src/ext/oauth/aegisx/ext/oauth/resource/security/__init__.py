@@ -1,4 +1,4 @@
-from ._idtokenbearer import OIDCTokenBearer
+from ._oidctokenbearer import OIDCTokenBearer
 
 
 __all__: list[str] = [
