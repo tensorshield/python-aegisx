@@ -161,7 +161,9 @@ class JSONWebKeyBase(pydantic.BaseModel, Generic[K, O, U]): # pragma: no cover
             "thumbprints are also sometimes known as certificate fingerprints. "
             "The key in the certificate MUST match the public key represented "
             "by other members of the JWK.  Use of this member is OPTIONAL."
-        )
+        ),
+        min_length=20,
+        max_length=20
     )
 
     x5t_s256: Base64URLEncoded | None = pydantic.Field(

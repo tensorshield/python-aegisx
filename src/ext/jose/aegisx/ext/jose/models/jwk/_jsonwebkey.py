@@ -101,6 +101,10 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
     def use(self): # pragma: no cover
         return self.root.use
 
+    @property
+    def x5t(self):
+        return self.root.x5t
+
     @classmethod
     def cek(cls, alg: JSONWebAlgorithm, enc: JSONWebAlgorithm):
         # TODO: Abstract all algorithms to a common Algorithm registry.
@@ -221,6 +225,7 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
 
     def is_public(self): # pragma: no cover
         return type(self.root) in (
+            JSONWebKeyEdwardsCurvePublic,
             JSONWebKeyEllipticCurvePublic,
             JSONKeyRSAPublic,
             JSONWebKeySR25519Public,
@@ -286,7 +291,7 @@ class JSONWebKey(pydantic.RootModel[JSONWebKeyType]):
         return hash(self.thumbprint('sha256'))
 
     def __repr__(self):
-        return f'<JSONWebKey: {{"kty": "{self.kty}", "alg": "{self.alg}", "use": "{self.use}", "thumbprint": "{self.thumbprint('sha256')}"}}>'
+        return f'<JSONWebKey: {{"kty": "{self.kty}", "alg": "{self.alg}", "crv": {self.crv}, "use": "{self.use}", "thumbprint": "{self.thumbprint('sha256')}"}}>'
 
 
 # TODO: ugly

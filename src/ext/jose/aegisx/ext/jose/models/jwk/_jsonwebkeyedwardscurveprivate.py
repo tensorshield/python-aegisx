@@ -1,3 +1,4 @@
+from typing import Any
 from typing import Literal
 
 import pydantic
@@ -32,7 +33,8 @@ class JSONWebKeyEdwardsCurvePrivate(JSONWebKeyEdwardsCurvePublic):
     def generate(
         cls,
         alg: JSONWebAlgorithm | str,
-        crv: Literal['Ed448', 'Ed25519', 'X448', 'X25519']
+        crv: Literal['Ed448', 'Ed25519', 'X448', 'X25519'],
+        **kwargs: Any
     ) -> 'JSONWebKeyEdwardsCurvePrivate':
         if not isinstance(alg, JSONWebAlgorithm):
             alg = JSONWebAlgorithm.validate(alg)
@@ -46,6 +48,7 @@ class JSONWebKeyEdwardsCurvePrivate(JSONWebKeyEdwardsCurvePublic):
             case 'X25519':
                 k = X25519PrivateKey.generate()
         return cls.model_validate({
+            **kwargs,
             **alg.config.params(),
             'kty': 'OKP',
             'crv': crv,

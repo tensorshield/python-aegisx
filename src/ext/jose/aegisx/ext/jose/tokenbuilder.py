@@ -171,7 +171,7 @@ class TokenBuilder(Generic[T]):
             kwargs.update({'alg': alg, 'enc': enc})
             if x5t_sha256 is not None:
                 kwargs['x5t#S256'] = x5t_sha256
-            if include and key.public is not None:
+            if (include or self._include_keys) and key.public is not None:
                 kwargs['jwk'] = key.public.model_dump(
                     exclude_defaults=True,
                     exclude_unset=True,
@@ -179,6 +179,8 @@ class TokenBuilder(Generic[T]):
                 )
             if key.kid:
                 kwargs.setdefault('kid', key.kid)
+            if key.x5t:
+                kwargs.setdefault('x5t', key.x5t)
             self._recipients[t] = TokenRecipient.fromkey(key, **kwargs)
         return self
 
@@ -214,13 +216,16 @@ class TokenBuilder(Generic[T]):
         self._issuer = iss
         return self
 
-    def payload(self, payload: bytes, cty: str | None = None):
+    def payload(self, payload: bytes | JSONWebToken, cty: str | None = None):
         if self._claims:
             raise TypeError(
                 'Can not set payload when a structured payload is specified.'
             )
         if cty is not None:
             self._content_type = cty
+        if isinstance(payload, JSONWebToken):
+            payload = bytes(payload)
+            self._content_type = 'JWT'
         self._payload = payload
         return self
 
@@ -379,7 +384,7 @@ class TokenBuilder(Generic[T]):
         if signer is None:
             if x5t_sha256 is not None:
                 kwargs['x5t#S256'] = x5t_sha256
-            if include and key.public is not None:
+            if (include or self._include_keys) and key.public is not None:
                 kwargs['jwk'] = key.public.model_dump(
                     exclude_defaults=True,
                     exclude_unset=True,
@@ -387,6 +392,8 @@ class TokenBuilder(Generic[T]):
                 )
             if key.kid:
                 kwargs.setdefault('kid', key.kid)
+            if key.x5t:
+                kwargs.setdefault('x5t', key.x5t)
             signer = TokenKey[JWSHeaderDict].fromkey(key, **kwargs)
             if signer.protected.get('alg') is None:
                 raise TypeError('The "alg" parameter is required.')
@@ -459,6 +466,11 @@ class TokenBuilder(Generic[T]):
         mode: SerializationMode,
         syntax: SerializationFormat
     ):
+        if syntax == 'compact' and len(self._signers) > 1 and not self._recipients:
+            raise ValueError(
+                "JWS Compact Encoding can not be used with multiple signers."
+            )
+        
         if not self._signers and not self._recipients:
             # If there are no signers, we are trying to build the payload
             # object.

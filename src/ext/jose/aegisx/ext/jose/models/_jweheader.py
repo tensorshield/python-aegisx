@@ -3,6 +3,7 @@ from typing import ClassVar
 
 import pydantic
 from libcanonical.types import Base64
+from libcanonical.types import Base64URLEncoded
 from libcanonical.utils.encoding import b64decode_json
 
 from aegisx.ext.jose.types import JSONWebAlgorithm
@@ -40,6 +41,15 @@ class JWEHeader(JOSEHeader):
 
     typ: str | None = pydantic.Field(
         default=None
+    )
+
+    x5t: Base64URLEncoded | None = pydantic.Field(
+        default=None
+    )
+
+    x5t_s256: Base64URLEncoded | None = pydantic.Field(
+        default=None,
+        alias='x5t#S256'
     )
 
     crit: list[str] | None = pydantic.Field(

@@ -43,6 +43,8 @@ class KeySelector:
         """Filter the :class:`KeySelector` using the given parameters
         and return a new instance.
         """
+        if not self._candidates:
+            return KeySelector([])
         algorithms = set(algorithms or [])
         identifiers = {f'kid:{k}' for k in set(identifiers or [])}
         keys = set(keys or [])
@@ -58,7 +60,7 @@ class KeySelector:
             selector = KeySelector({
                 *set([self._index[k] for k in identifiers if k in self._index]),
                 *set([self._index[t] for t in thumbprints if t in self._index]),
-                *set([key for key in keys if key in self._candidates])
+                *set([key for key in keys if key.thumbprint('sha256') in self._index])
             })
             return selector.select(
                 algorithms=algorithms,
@@ -114,3 +116,6 @@ class KeySelector:
 
     def __iter__(self):
         return iter(self._candidates)
+
+    def __repr__(self):
+        return f'KeySelector(candidates={repr(self._candidates)})'

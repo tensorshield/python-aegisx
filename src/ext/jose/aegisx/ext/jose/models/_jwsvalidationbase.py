@@ -28,11 +28,14 @@ class JWSValidationBase(pydantic.BaseModel):
             if not signature.protected.jwk.is_asymmetric():
                 raise InvalidSignature('The "jwk" Header Parameter must be an asymmetric key.')
             if not signature.protected.jwk.is_public():
-                raise InvalidSignature('The "jwk" Header Parameter must be a public key.')
+                raise InvalidSignature(f'The "jwk" Header Parameter must be a public key: {signature.protected.jwk}.')
+            if not signature.protected.encoded:
+                raise ValueError('Encoded signature not retained during deserialization.')
             message = self.encode_message(
                 bytes(signature.protected.encoded),
                 payload
             )
+
             result = signature.verify(signature.protected.jwk, message)
             assert isinstance(result, int)
             if not bool(result):

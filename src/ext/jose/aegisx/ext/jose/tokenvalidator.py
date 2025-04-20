@@ -4,12 +4,14 @@ from typing import overload
 from typing import Any
 from typing import Generic
 from typing import Iterable
+from typing import Literal
 from typing import TypeVar
 from typing import Union
 
 import pydantic
 from libcanonical.types import Base64
 from libcanonical.types import HTTPResourceLocator
+from libcanonical.utils.encoding import b64decode
 
 from aegisx.ext.jose.types import ForbiddenAudience
 from aegisx.ext.jose.types import InvalidSignature
@@ -29,9 +31,10 @@ from .models import JWSCompactSerialization
 from .models import JWSFlattenedSerialization
 from .models import JWSGeneralSerialization
 from .models import Signature
+from .tokenbuilder import SerializationFormat
 
 
-T = TypeVar('T', default=Base64, bound=Base64 | JSONWebToken)
+T = TypeVar('T', default=bytes, bound=bytes | JSONWebToken)
 
 JOSEGeneralType = Union[JWSGeneralSerialization | JWEGeneralSerialization]
 
@@ -142,6 +145,24 @@ class TokenValidator(Generic[T]):
         self.subjects = set()
         self._verify = verify
 
+    def deserialize(
+        self,
+        typ: Literal['jws'],
+        syntax: SerializationFormat,
+        token: Any
+    ):
+        mode = f'{typ}:{syntax}'
+        token = self.decoder.validate_python(token)
+        match mode:
+            case 'jws:compact':
+                return JWSCompactSerialization.model_validate(token)
+            case 'jws:flattened':
+                return JWSFlattenedSerialization.model_validate(token)
+            case 'jws:general':
+                return JWSGeneralSerialization.model_validate(token)
+            case _:
+                pass
+
     def get_context(self) -> dict[str, Any]:
         return {
             'audiences': self.audience,
@@ -158,7 +179,7 @@ class TokenValidator(Generic[T]):
     def inspect(self, encoded: Any):
         adapter: pydantic.TypeAdapter[JOSEGeneralType]
         adapter = pydantic.TypeAdapter(JOSEGeneralType)
-        obj = adapter.validate_python(encoded)
+        obj = adapter.validate_python(self.decoder.validate_python(encoded))
         return obj.headers
 
     def is_trusted_issuer(self, iss: HTTPResourceLocator | str | None):
@@ -287,10 +308,19 @@ class TokenValidator(Generic[T]):
         ):
             raise InvalidSignature
         try:
-            return self.adapter.validate_python(
+            payload = self.adapter.validate_python(
                 token.get_payload(),
                 context=self.get_context()
             )
+            assert isinstance(payload, (bytes, JSONWebToken))
+
+            # If the payload is bytes at this point,
+            # assumed the raw payload is return and
+            # decode from urlsafe b64.
+            if isinstance(payload, bytes):
+                payload = bytes(b64decode(payload))
+            assert isinstance(payload, (bytes, JSONWebToken))
+            return payload
         except pydantic.ValidationError as exception:
             for error in exception.errors():
                 match error['type']:

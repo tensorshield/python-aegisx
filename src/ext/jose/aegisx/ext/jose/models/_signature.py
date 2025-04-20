@@ -36,8 +36,8 @@ class Signature(pydantic.BaseModel):
     def crv(self):
         if self.protected.alg and self.protected.alg.crv:
             return self.protected.alg.crv
-        if self.protected.jwk and self.protected.jwk.alg:
-            return self.protected.jwk.alg.crv
+        if self.protected.jwk:
+            return self.protected.jwk.crv
 
     @property
     def cty(self):

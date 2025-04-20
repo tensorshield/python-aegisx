@@ -119,6 +119,9 @@ class JSONWebKeySet(pydantic.BaseModel):
         signature: Signature,
         message: bytes
     ) -> bool:
+        if not self.sig:
+            raise NotVerifiable
+        assert self.sig
         candidates = signature.candidates(KeySelector(self.sig))
         if not candidates:
             raise NotVerifiable
