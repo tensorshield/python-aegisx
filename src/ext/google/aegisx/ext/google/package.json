@@ -5,16 +5,18 @@
     "author_email": "immortal.izzy@tensorshield.ai",
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
-      "aegisx>=0.0.4",
+      "aegisx.ext.jose>=0.0.3",
       "aegisx.ext.oauth",
       "fastapi",
       "httpx",
       "google-auth",
       "google-auth-oauthlib",
-      "google-auth-httplib2"
+      "google-auth-httplib2",
+      "google-cloud-iam"
     ],
     "extras_require": {
       "develop": [
+        "aegisx.ext.iam",
         "pytest",
         "pytest_asyncio",
         "coverage"
