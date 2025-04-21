@@ -170,6 +170,7 @@ class AccessTokenBearer(fastapi.security.HTTPBearer, Generic[T]):
                         'is not accepted.'
                     )
                 )
+        return request.state.subject
 
     async def get_subject(
         self,
@@ -205,8 +206,7 @@ class AccessTokenBearer(fastapi.security.HTTPBearer, Generic[T]):
         validator = self.get_token_validator(request)
         return await validator.validate(token)
 
-    async def __call__(self, request: fastapi.Request):
+    async def __call__(self, request: fastapi.Request): # type: ignore
         request.state.subject = AnonymousSubject()
         bearer = await super().__call__(request)
-        await self.authenticate(request, bearer)
-        return bearer
+        return await self.authenticate(request, bearer)
