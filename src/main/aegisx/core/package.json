@@ -7,7 +7,7 @@
   "install_requires": [
     "cryptography",
     "pydantic>=2",
-    "libcanonical>=0.1.0"
+    "libcanonical>=0.1.2"
   ],
   "extras_require": {
     "develop": [
