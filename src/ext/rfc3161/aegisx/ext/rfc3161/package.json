@@ -5,7 +5,7 @@
     "author_email": "immortal.izzy@tensorshield.ai",
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
-      "aegisx>=0.0.4",
+      "aegisx>=0.1.0a1",
       "httpx",
       "pyasn1",
       "pyasn1_modules",
