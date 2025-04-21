@@ -23,6 +23,10 @@ class DomainPrincipal(Principal[DomainName]):
             raise ValueError(f'not a {cls.__name__}.')
         return cls(value=DomainName.validate(value))
 
+    @classmethod
+    def fromdomain(cls, value: str):
+        return cls.validate(f'domain:{value}')
+
     def is_authenticated(self) -> bool: # pragma: no cover
         return True
 

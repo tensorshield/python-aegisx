@@ -12,5 +12,21 @@ class AnonymousSubject(Subject):
     who are not authenticated.
     """
 
+    @property
+    def email(self) -> None:
+        return None
+
+    @property
+    def email_verified(self):
+        return False
+
+    @property
+    def phonenumber(self) -> None:
+        return None
+
+    @property
+    def phonenumber_verified(self) -> None:
+        return None
+
     def principals(self):
         return {ANONYMOUS}

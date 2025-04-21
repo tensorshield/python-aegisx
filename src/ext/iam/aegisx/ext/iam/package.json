@@ -6,8 +6,8 @@
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
       "aegisx>=0.1.0a1",
-      "aegisx.ext.jose",
-      "aegisx.ext.rfc3161",
+      "aegisx.ext.jose>=0.0.3",
+      "aegisx.ext.rfc3161>=0.0.3",
       "cel-python",
       "libcanonical>=0.1.2",
       "pydantic>=2"

@@ -25,6 +25,10 @@ class AuthenticatedSubject(Subject):
         default=...
     )
 
+    email_verified: bool = pydantic.Field(
+        default=False
+    )
+
     service_account: bool = pydantic.Field(
         default=...
     )
