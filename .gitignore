@@ -1,4 +1,5 @@
 # Misc
+local.sh
 teamleader.py
 run-keycloak.sh
 keycloak.py
