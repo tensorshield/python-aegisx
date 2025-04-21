@@ -32,6 +32,7 @@ class Client(httpx.AsyncClient):
 
     @property
     def client_id(self):
+        assert self.credential
         return self.credential.client_id
 
     @staticmethod
@@ -132,6 +133,7 @@ class Client(httpx.AsyncClient):
         metadata: ServerMetadata | None = None,
         **kwargs: Any,
     ) -> HTTPSResourceLocator:
+        assert self.credential
         metadata = metadata or self.metadata
         if scope is not None:
             kwargs['scope'] = scope
@@ -174,6 +176,7 @@ class Client(httpx.AsyncClient):
             response (AuthorizationResponse): the response from the authorization
                 endpoint.
         """
+        assert self.credential
         assert self.metadata.token_endpoint
         if not response.code:
             raise ValueError(
@@ -278,6 +281,7 @@ class Client(httpx.AsyncClient):
             raise NotImplementedError(f"invalid response from authorization server:\n\n{response.text}.")
 
     def _select_client_secret_jwt_alg(self, metadata: ServerMetadata):
+        assert self.credential
         if self.credential.method != ClientAuthenticationMethod.client_secret_jwt:
             return
         if self.credential.alg:

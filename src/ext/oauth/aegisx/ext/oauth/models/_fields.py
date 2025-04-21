@@ -2,8 +2,8 @@ from typing import Annotated
 
 import pydantic
 from aegisx.types import SpaceSeparatedSet
-from aegisx.ext.jose import JWECompactEncoded
-from aegisx.ext.jose import JWSCompactEncoded
+from aegisx.ext.jose.types import JWECompactEncoded
+from aegisx.ext.jose.types import JWSCompactEncoded
 
 from aegisx.ext.oauth.types import AccessTokenType
 from aegisx.ext.oauth.types import IssuerIdentifier

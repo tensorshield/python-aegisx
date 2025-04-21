@@ -4,8 +4,8 @@ if TYPE_CHECKING:
 
 import pydantic
 from aegisx.ext.jose import JSONWebToken
-from aegisx.ext.jose import JWECompactEncoded
-from aegisx.ext.jose import JWSCompactEncoded
+from aegisx.ext.jose.types import JWECompactEncoded
+from aegisx.ext.jose.types import JWSCompactEncoded
 
 from aegisx.ext.oauth.types import AccessTokenType
 from ._accesstokentokenresponse import AccessTokenTokenResponse

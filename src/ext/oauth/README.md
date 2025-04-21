@@ -15,6 +15,7 @@ dynamic client registration.
 - RFC 6750 The OAuth 2.0 Authorization Framework: Bearer Token Usage
 - RFC 7009 OAuth 2.0 Token Revocation
 - RFC 7519 JSON Web Token (JWT)
+- RFC 7662 OAuth 2.0 Token Introspection
 - RFC 8414 OAuth 2.0 Authorization Server Metadata
 - RFC 8642 OAuth 2.0 Device Authorization Grant
 - RFC 8693 OAuth 2.0 Token Exchange

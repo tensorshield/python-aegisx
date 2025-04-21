@@ -1,6 +1,6 @@
 import pydantic
-from aegisx.ext.jose import JWECompactEncoded
-from aegisx.ext.jose import JWSCompactEncoded
+from aegisx.ext.jose.types import JWECompactEncoded
+from aegisx.ext.jose.types import JWSCompactEncoded
 
 from ._authorizationserverresponse import AuthorizationServerResponse
 
