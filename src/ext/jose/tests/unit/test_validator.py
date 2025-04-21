@@ -80,7 +80,8 @@ async def test_builder_creates_validatable_tokens(
     validator = TokenValidator(
         cls,
         keys=signers,
-        audience=audience
+        audience=audience,
+        issuer=None if not isinstance(payload, JSONWebToken) else payload.iss
     )
     builder = TokenBuilder(
         cls,

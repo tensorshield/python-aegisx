@@ -2,8 +2,10 @@ import datetime
 import time
 from typing import cast
 from typing import Any
+from typing import Callable
 from typing import ClassVar
 from typing import Iterable
+from typing import Self
 
 import pydantic
 import pydantic_core
@@ -14,6 +16,7 @@ from libcanonical.utils.encoding import b64decode_json
 
 
 class JSONWebToken(pydantic.BaseModel):
+    __ttl__: ClassVar[int] = 0
     __typ__: ClassVar[str] = 'JWT'
     __cty__: ClassVar[str] = 'JWT'
 
@@ -175,20 +178,23 @@ class JSONWebToken(pydantic.BaseModel):
                     )
         return value
 
-    @pydantic.model_validator(mode='after')
-    def validate_iss(self, info: pydantic.ValidationInfo):
-        if info.context:
-            if info.context.get('mode') == 'deserialize':
-                issuers: set[str] = info.context.get('issuers')
-                if issuers and not self.iss:
-                    raise ValueError(
-                        'The token does not specify the "iss" claim.'
-                    )
-                if issuers and self.iss not in issuers:
-                    raise ValueError(
-                        f"Tokens issued by {self.iss} are not accepted."
-                    )
-        return self
+    @pydantic.field_validator('iat', mode='before')
+    def validate_iat(
+        cls,
+        value: int | None,
+        info: pydantic.ValidationInfo
+    ):
+        ctx = cast(dict[str, Any], info.context or {})
+        now = ctx.get('now', int(time.time()))
+        if cls.__ttl__:
+            if value is None:
+                raise ValueError(
+                    f'A time-to-live of {cls.__ttl__} is specified but '
+                    'the token does not specify the "iat" claim.'
+                )
+            if (now - value) > cls.__ttl__:
+                raise ValueError('The token is too old.')
+        return value
 
     @pydantic.field_validator('nbf', mode='before')
     def validate_nbf(cls, value: int | None, info: pydantic.ValidationInfo) -> int | None:
@@ -213,6 +219,21 @@ class JSONWebToken(pydantic.BaseModel):
                 )
         return value
 
+    @pydantic.model_validator(mode='after')
+    def validate_iss(self, info: pydantic.ValidationInfo):
+        if info.context:
+            if info.context.get('mode') == 'deserialize':
+                issuers: set[str] | Callable[[Self], bool] = info.context.get('issuers', cast(set[str], set()))
+                if isinstance(issuers, set) and issuers and not self.iss:
+                    raise ValueError(
+                        'The token does not specify the "iss" claim.'
+                    )
+                if not self.is_acceped_issuer(issuers): # type: ignore
+                    raise ValueError(
+                        f"Tokens issued by {self.iss} are not accepted."
+                    )
+        return self
+
     @classmethod
     def deserialize(
         cls,
@@ -231,6 +252,21 @@ class JSONWebToken(pydantic.BaseModel):
             case False:
                 assert isinstance(claims, (str, bytes))
                 return cls.model_validate_json(claims, context=ctx)
+
+    def is_acceped_issuer(self, issuers: set[str] | Callable[[Self], bool]):
+        match bool(callable(issuers)):
+            case True:
+                assert callable(issuers)
+                return issuers(self)
+            case False:
+                assert isinstance(issuers, set)
+                return any([
+                    self.iss in issuers,
+                    not self.iss and not issuers
+                ])
+
+    def get_jwks_uri(self) -> str | None:
+        return None
 
     def __str__(self): # pragma: no cover
         return self.model_dump_json(

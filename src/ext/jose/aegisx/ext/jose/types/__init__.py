@@ -21,6 +21,7 @@ from ._jwsheaderdict import JWSHeaderDict
 from ._keyoperationtype import KeyOperationType
 from ._keymanagementmode import KeyManagementMode
 from ._keyusetype import KeyUseType
+from ._malformed import Malformed
 from ._malformed import MalformedEncoding
 from ._malformed import MalformedHeader
 from ._malformed import MalformedObject
@@ -57,6 +58,7 @@ __all__: list[str] = [
     'KeyManagementMode',
     'KeyOperationType',
     'KeyUseType',
+    'Malformed',
     'MalformedEncoding',
     'MalformedHeader',
     'MalformedObject',

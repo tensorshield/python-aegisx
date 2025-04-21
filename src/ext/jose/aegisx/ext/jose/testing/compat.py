@@ -164,7 +164,8 @@ async def test_compat_jwt_jws_their_signature_our_verification(
         pytest.fail(f"No test key '{kid}' specified for {alg}.")
     validator = TokenValidator[JSONWebToken](
         JSONWebToken,
-        jwks=jwks
+        jwks=jwks,
+        issuer='foo'
     )
     signers =  [key]
     if second is not None:

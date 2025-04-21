@@ -1,3 +1,4 @@
+from .jwksresolver import JWKSResolver
 from .models import JSONWebToken
 from .models import JSONWebKey
 from .models import JSONWebKeySet
@@ -12,6 +13,7 @@ __all__: list[str] = [
     'JSONWebKey',
     'JSONWebKeySet',
     'JSONWebToken',
+    'JWKSResolver',
     'KeySelector',
     'SerializationFormat',
     'Signature',

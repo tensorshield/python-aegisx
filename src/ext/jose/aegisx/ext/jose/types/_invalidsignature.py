@@ -1,9 +1,13 @@
 from ._joseexception import JOSEException
 
 
-class InvalidSignature(JOSEException):
+class SignatureException(JOSEException):
     pass
 
 
-class NotVerifiable(InvalidSignature):
+class InvalidSignature(SignatureException):
+    pass
+
+
+class NotVerifiable(SignatureException):
     pass

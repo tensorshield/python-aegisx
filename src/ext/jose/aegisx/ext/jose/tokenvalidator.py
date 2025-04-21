@@ -11,6 +11,7 @@ from typing import Union
 
 import pydantic
 from libcanonical.types import HTTPResourceLocator
+from libcanonical.utils.encoding import b64decode
 
 from aegisx.ext.jose.types import ForbiddenAudience
 from aegisx.ext.jose.types import InvalidSignature
@@ -163,9 +164,9 @@ class TokenValidator(Generic[T]):
                 pass
 
     def get_context(self) -> dict[str, Any]:
-        return {
+        ctx: dict[str, Any] = {
             'audiences': self.audience,
-            'issuers': self.issuer,
+            'issuers': self.is_accepted_issuer,
             'max_clock_skew': self.max_clock_skew,
             'mode': 'deserialize',
             'now': int(time.time()),
@@ -174,12 +175,21 @@ class TokenValidator(Generic[T]):
             'subjects': self.subjects,
             **self.context_override
         }
+        return ctx
 
     def inspect(self, encoded: Any):
         adapter: pydantic.TypeAdapter[JOSEGeneralType]
         adapter = pydantic.TypeAdapter(JOSEGeneralType)
         obj = adapter.validate_python(self.decoder.validate_python(encoded))
         return obj.headers
+
+    def is_accepted_issuer(self, payload: JSONWebToken) -> bool:
+        """Return a boolean indicating if the issuer of a JSON Web Token (JWT)
+        is accepted."""
+        return any([
+            not self.issuer and payload.iss is None,
+            payload.iss is not None and payload.iss in self.issuer
+        ])
 
     def is_trusted_issuer(self, iss: HTTPResourceLocator | str | None):
         """Return ``True`` if the issuer is trusted for JSON Web Key Set (JWKS)
@@ -330,7 +340,7 @@ class TokenValidator(Generic[T]):
             # assumed the raw payload is return and
             # decode from urlsafe b64.
             if isinstance(payload, bytes):
-                payload = base64.urlsafe_b64decode(bytes(payload))
+                payload = b64decode(payload)
             assert isinstance(payload, (bytes, JSONWebToken))
             return payload
         except pydantic.ValidationError as exception:
