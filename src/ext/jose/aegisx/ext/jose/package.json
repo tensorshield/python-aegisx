@@ -5,11 +5,10 @@
     "author_email": "immortal.izzy@tensorshield.ai",
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
-      "aegisx>0.0.1",
+      "aegisx>0.1.0a1",
       "cryptography",
       "certifi",
-      "pydantic>=2",
-      "libcanonical>=0.1.0"
+      "pydantic>=2"
     ],
     "extras_require": {
       "develop": [
