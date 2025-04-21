@@ -6,7 +6,7 @@
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
       "aegisx>=0.1.0a1",
-      "aegisx.ext.jose>=0.0.2",
+      "aegisx.ext.jose>=0.0.3",
       "httpx",
       "libcanonical>=0.1.2",
       "pydantic>=2"
