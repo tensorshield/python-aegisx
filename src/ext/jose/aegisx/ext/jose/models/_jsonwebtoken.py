@@ -9,10 +9,13 @@ from typing import Self
 
 import pydantic
 import pydantic_core
-from pydantic_core import PydanticCustomError
+from aegisx.types import SpaceSeparatedSet
 from libcanonical.types import HTTPResourceLocator
 from libcanonical.utils.encoding import b64encode
 from libcanonical.utils.encoding import b64decode_json
+from pydantic_core import PydanticCustomError
+
+from aegisx.ext.jose.types import UntrustedIssuer
 
 
 class JSONWebToken(pydantic.BaseModel):
@@ -55,6 +58,15 @@ class JSONWebToken(pydantic.BaseModel):
 
     jti: str | None = pydantic.Field(
         default=None
+    )
+
+    scope: SpaceSeparatedSet = pydantic.Field(
+        default_factory=SpaceSeparatedSet,
+        title="Scopes",
+        description=(
+            "A space-separated list of scopes associated with the token, "
+            "in the format described in Section 3.3 of RFC 6749."
+        )
     )
 
     @property
@@ -225,11 +237,11 @@ class JSONWebToken(pydantic.BaseModel):
             if info.context.get('mode') == 'deserialize':
                 issuers: set[str] | Callable[[Self], bool] = info.context.get('issuers', cast(set[str], set()))
                 if isinstance(issuers, set) and issuers and not self.iss:
-                    raise ValueError(
+                    raise UntrustedIssuer(
                         'The token does not specify the "iss" claim.'
                     )
                 if not self.is_acceped_issuer(issuers): # type: ignore
-                    raise ValueError(
+                    raise UntrustedIssuer(
                         f"Tokens issued by {self.iss} are not accepted."
                     )
         return self
@@ -264,6 +276,12 @@ class JSONWebToken(pydantic.BaseModel):
                     self.iss in issuers,
                     not self.iss and not issuers
                 ])
+
+    def is_service_account(self) -> bool:
+        """Return ``True`` if the JSON Web Token (JWT) represents an identity
+        and the identity is a service account.
+        """
+        return False
 
     def get_jwks_uri(self) -> str | None:
         return None

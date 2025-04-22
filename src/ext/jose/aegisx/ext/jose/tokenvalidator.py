@@ -1,4 +1,3 @@
-import base64
 import functools
 import time
 from typing import overload
@@ -342,7 +341,7 @@ class TokenValidator(Generic[T]):
             if isinstance(payload, bytes):
                 payload = b64decode(payload)
             assert isinstance(payload, (bytes, JSONWebToken))
-            return payload
+            return payload # type: ignore
         except pydantic.ValidationError as exception:
             for error in exception.errors():
                 match error['type']:

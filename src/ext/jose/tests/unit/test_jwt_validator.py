@@ -7,6 +7,7 @@ from aegisx.ext.jose import TokenBuilder
 from aegisx.ext.jose import TokenValidator
 from aegisx.ext.jose import JSONWebToken
 from aegisx.ext.jose.types import ForbiddenAudience
+from aegisx.ext.jose.types import UntrustedIssuer
 
 
 class TypedJWT1(JSONWebToken):
@@ -71,7 +72,7 @@ async def test_validator_requires_equal_issuer(sig: JSONWebKey):
         .update(foo='Hello world!')\
         .sign(sig)\
         .build()
-    with pytest.raises(pydantic.ValidationError):
+    with pytest.raises(UntrustedIssuer):
         await validator.validate(jws)
 
 
@@ -86,5 +87,5 @@ async def test_validator_rejects_missing_issuer(sig: JSONWebKey):
         .update(foo='Hello world!')\
         .sign(sig)\
         .build()
-    with pytest.raises(pydantic.ValidationError):
+    with pytest.raises(UntrustedIssuer):
         await validator.validate(jws)
