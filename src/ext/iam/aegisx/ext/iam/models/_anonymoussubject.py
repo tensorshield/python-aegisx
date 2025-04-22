@@ -12,19 +12,19 @@ class AnonymousSubject(Subject):
     who are not authenticated.
     """
 
-    @property
+    @property # pragma: no cover
     def email(self) -> None:
         return None
 
-    @property
+    @property # pragma: no cover
     def email_verified(self):
         return False
 
-    @property
+    @property # pragma: no cover
     def phonenumber(self) -> None:
         return None
 
-    @property
+    @property # pragma: no cover
     def phonenumber_verified(self) -> None:
         return None
 

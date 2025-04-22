@@ -86,3 +86,33 @@ def test_lt_self(a: PrincipalType, b: PrincipalType):
 @pytest.mark.parametrize("a,b", GT_INPUTS_SELF)
 def test_gt_self(a: PrincipalType, b: PrincipalType):
     assert a > b
+
+
+@pytest.mark.parametrize("principal,authenticated", [
+    (UserPrincipal.validate('user:root@example.com'), True),
+    (ServiceAccountPrincipal.validate('serviceAccount:root@example.com'), True),
+    (DomainPrincipal.validate('domain:example.com'), True),
+    (GroupPrincipal.validate('group:users@example.com'), True),
+    (AuthenticatedPrincipal.validate('allAuthenticatedUsers'), True),
+    (AnonymousPrincipal.validate('allUsers'), False)
+])
+def test_principal_is_authenticated(
+    principal: Principal,
+    authenticated: bool
+):
+    assert principal.is_authenticated() is authenticated
+
+
+@pytest.mark.parametrize("principal,subject", [
+    (UserPrincipal.validate('user:root@example.com'), True),
+    (ServiceAccountPrincipal.validate('serviceAccount:root@example.com'), True),
+    (DomainPrincipal.validate('domain:example.com'), False),
+    (GroupPrincipal.validate('group:users@example.com'), False),
+    (AuthenticatedPrincipal.validate('allAuthenticatedUsers'), True),
+    (AnonymousPrincipal.validate('allUsers'), True)
+])
+def test_principal_is_subject(
+    principal: Principal,
+    subject: bool
+):
+    assert principal.is_subject() is subject

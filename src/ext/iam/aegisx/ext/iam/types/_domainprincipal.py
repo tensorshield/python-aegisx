@@ -24,7 +24,7 @@ class DomainPrincipal(Principal[DomainName]):
         return cls(value=DomainName.validate(value))
 
     @classmethod
-    def fromdomain(cls, value: str):
+    def fromdomain(cls, value: str): # pragma: no cover
         return cls.validate(f'domain:{value}')
 
     def is_authenticated(self) -> bool: # pragma: no cover

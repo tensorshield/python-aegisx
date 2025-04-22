@@ -1,3 +1,4 @@
+import pathlib
 from typing import Literal
 
 import pytest
@@ -5,13 +6,24 @@ from aegisx.ext.jose import JSONWebKey
 from aegisx.ext.rfc3161 import TimestampToken
 
 from aegisx.ext.iam.repository import MemoryIAMRepository
+from aegisx.ext.iam.repository import IAMRoleStaticRepository
 from aegisx.ext.iam.types import ServiceAccountPrincipal
 from aegisx.ext.iam.types import UserPrincipal
+
+
+@pytest.fixture(scope='session')
+def config_dir():
+    return pathlib.Path(__file__).parent.parent.joinpath('etc/roles.d')
 
 
 @pytest.fixture
 def repo():
     return MemoryIAMRepository()
+
+
+@pytest.fixture(scope='session')
+def roles_repo(config_dir: pathlib.Path):
+    return IAMRoleStaticRepository(config_dir=config_dir)
 
 
 @pytest.fixture
