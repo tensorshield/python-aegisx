@@ -3,6 +3,7 @@ from libcanonical.types import EmailAddress
 
 from aegisx.types import SpaceSeparatedSet
 from aegisx.ext.jose import JSONWebToken
+from aegisx.ext.jose.types import InvalidToken
 
 
 class GoogleServiceAccountToken(JSONWebToken):
@@ -43,6 +44,30 @@ class GoogleServiceAccountToken(JSONWebToken):
         # not validate if the service account does not exist (will
         # be apparent when the JWKS can not be retrieved and the
         # signature does not validate).
+        return True
+
+    @pydantic.model_validator(mode='after')
+    def validate_sub_equals_iss(self):
+        if self.iss != self.sub:
+            raise InvalidToken('Only self-issued access tokens are accepted.')
+        return self
+
+    @pydantic.model_serializer(mode='wrap')
+    def include_calculated_properties(
+        self,
+        nxt: pydantic.SerializerFunctionWrapHandler,
+        info: pydantic.SerializationInfo,
+    ):
+        values = nxt(self)
+        if info.mode == 'python':
+            values.update({
+                'email': self.email,
+                'email_verified': self.email_verified,
+                'service_account': self.is_service_account()
+            })
+        return values
+
+    def is_service_account(self):
         return True
 
     def get_jwks_uri(self):

@@ -4,7 +4,9 @@ import logging
 import os
 import time
 from typing import cast
+from typing import Any
 from typing import AsyncGenerator
+from typing import Iterable
 
 import httpx
 import google.auth
@@ -69,6 +71,7 @@ class GoogleServiceAccountAuth(httpx.Auth):
     def __init__(
         self,
         audience: str,
+        scope: Iterable[str] | None = None,
         credentials: ServiceAccountCredentials | ImpersonatedCredentials | DefaultCredentials | None = None,
         service_account: str | None = os.getenv('GOOGLE_SERVICE_ACCOUNT_EMAIL'),
         token_ttl: int = 600,
@@ -92,6 +95,7 @@ class GoogleServiceAccountAuth(httpx.Auth):
         self.audience = audience
         self.lock = asyncio.Lock()
         self.logger = logger or self.logger
+        self.scope = set(scope or [])
         self.timeout = timeout
         self.token_ttl = token_ttl
         self.service_account, self.credentials = self.default_credentials(
@@ -175,16 +179,18 @@ class GoogleServiceAccountAuth(httpx.Auth):
             self.client = IAMCredentialsAsyncClient(credentials=self.credentials)
         now = int(time.time())
         exp = now + self.token_ttl
+        claims: dict[str, Any] = {
+            'aud': self.audience,
+            'iss': self.service_account,
+            'sub': self.service_account,
+            'iat': now,
+            'exp': exp,
+        }
+        if self.scope:
+            claims['scope'] = ' '.join(sorted(self.scope))
         response = await self.client.sign_jwt( # type: ignore
             name=f"projects/-/serviceAccounts/{self.service_account}",
             timeout=self.timeout,
-            payload=json.dumps({
-                'aud': self.audience,
-                'iss': self.service_account,
-                'sub': self.service_account,
-                'iat': now,
-                'exp': exp,
-                #'scope': ' '.join(sorted(self.target_scopes))
-            })
+            payload=json.dumps(claims)
         )
         return response.signed_jwt, exp
