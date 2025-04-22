@@ -26,7 +26,10 @@ from aegisx.ext.jose.types import ForbiddenAudience
 from aegisx.ext.jose.types import InvalidSignature
 from aegisx.ext.jose.types import InvalidToken
 from aegisx.ext.jose.types import Undecryptable
+from aegisx.ext.jose.types import UntrustedIssuer
 
+from aegisx.ext.oauth.resource.types import ResourceServerException
+from aegisx.ext.oauth.resource.types import InvalidRequestToken
 from ._accesstokenvalidator import AccessTokenValidator
 
 
@@ -106,17 +109,18 @@ class AccessTokenBearer(fastapi.security.HTTPBearer, Generic[T]):
         bearer: fastapi.security.HTTPAuthorizationCredentials | None
     ):
         request.state.subject = AnonymousSubject()
+        request.state.scope = set()
         if bearer is not None:
             try:
-                request.state.subject = await self.get_subject(
-                    await self.validate(request, bearer.credentials)
-                )
+                token = await self.validate(request, bearer.credentials)
+                request.state.scope = set(token.scope)
+                request.state.subject = await self.get_subject(token)
+                await self.validate_request(request, token, request.state.subject)
             except NotVerifiable:
                 # We don't have any keys that can verify the signature and
                 # there were no instruments to obtain them.
-                raise fastapi.HTTPException(
-                    status_code=403,
-                    detail=(
+                raise InvalidRequestToken(
+                    message=(
                         "The JSON Web Token (JWS) provided in the Authorization "
                         "header was signed using a key that is not trusted "
                         "by the server, and it had no means to obtain trusted "
@@ -124,35 +128,33 @@ class AccessTokenBearer(fastapi.security.HTTPBearer, Generic[T]):
                     )
                 )
             except ForbiddenAudience:
-                raise fastapi.HTTPException(
-                    status_code=403,
-                    detail=(
+                raise InvalidRequestToken(
+                    message=(
                         'The intended audience specified by the "aud" claim '
                         'is not accepted by the server.'
                     )
                 )
             except InvalidSignature:
-                raise fastapi.HTTPException(
-                    status_code=403,
-                    detail=(
+                raise InvalidRequestToken(
+                    message=(
                         'The credential was signed by an untrusted '
                         'key.'
                     )
                 )
             except Undecryptable:
-                raise fastapi.HTTPException(
-                    status_code=403,
-                    detail=(
+                raise InvalidRequestToken(
+                    message=(
                         'The encrypted credential in the Authorization header '
                         'could not be decrypted with any known key. Consult the '
                         'service documentation on how to properly encrypt an '
                         'access token.'
                     )
                 )
+            except UntrustedIssuer as e:
+                raise InvalidRequestToken(message=e.message)
             except (pydantic.ValidationError, InvalidToken, Malformed):
-                raise fastapi.HTTPException(
-                    status_code=403,
-                    detail=(
+                raise InvalidRequestToken(
+                    message=(
                         'The credential provided in the Authorization header '
                         'is malformed.'
                     )
@@ -163,9 +165,8 @@ class AccessTokenBearer(fastapi.security.HTTPBearer, Generic[T]):
                     type(e).__name__,
                     repr(e)
                 )
-                raise fastapi.HTTPException(
-                    status_code=403,
-                    detail=(
+                raise InvalidRequestToken(
+                    message=(
                         'The credential provided in the Authorization header '
                         'is not accepted.'
                     )
@@ -206,7 +207,18 @@ class AccessTokenBearer(fastapi.security.HTTPBearer, Generic[T]):
         validator = self.get_token_validator(request)
         return await validator.validate(token)
 
+    async def validate_request(
+        self,
+        request: fastapi.Request,
+        token: T,
+        subject: Subject
+    ) -> None:
+        pass
+
     async def __call__(self, request: fastapi.Request): # type: ignore
         request.state.subject = AnonymousSubject()
         bearer = await super().__call__(request)
-        return await self.authenticate(request, bearer)
+        try:
+            return await self.authenticate(request, bearer)
+        except ResourceServerException as e:
+            raise e.http()
