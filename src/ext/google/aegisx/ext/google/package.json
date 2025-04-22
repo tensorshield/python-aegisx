@@ -6,7 +6,7 @@
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
       "aegisx.ext.jose>=0.1.0",
-      "aegisx.ext.oauth",
+      "aegisx.ext.oauth>=0.0.4",
       "fastapi",
       "httpx",
       "google-auth",
