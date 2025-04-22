@@ -16,6 +16,10 @@ class Subject(pydantic.BaseModel):
         default_factory=set
     )
 
+    roles: set[str] = pydantic.Field(
+        default_factory=set
+    )
+
     def is_authenticated(self) -> bool: # pragma: no cover
         """Return ``True`` if the subject is authenticated.
 

@@ -22,6 +22,7 @@ def test_policy_has_roles(policy: IAMPolicy):
         AuthorizationContext.model_validate({
             'principal': 'user:root@test.tensorshield.ai',
             'subject': {
+                'sub': '123',
                 'email': 'root@test.tensorshield.ai',
                 'service_account': False
             }
@@ -32,6 +33,7 @@ def test_policy_has_roles(policy: IAMPolicy):
         AuthorizationContext.model_validate({
             'principal': 'user:root@test.tensorshield.ai',
             'subject': {
+                'sub': '123',
                 'email': 'root@test.tensorshield.ai',
                 'service_account': False,
                 'groups': {'group1@test.tensorshield.ai'}
@@ -43,6 +45,7 @@ def test_policy_has_roles(policy: IAMPolicy):
         AuthorizationContext.model_validate({
             'principal': 'serviceAccount:root@test.tensorshield.ai',
             'subject': {
+                'sub': '123',
                 'email': 'root@test.tensorshield.ai',
                 'service_account': True
             }

@@ -9,6 +9,7 @@ from aegisx.ext.iam.types import UserPrincipal
 
 def test_service_account_principal():
     subject = AuthenticatedSubject.model_validate({
+        'sub': '123',
         'email': 'test@tensorshield.ai',
         'service_account': True
     })
@@ -17,6 +18,7 @@ def test_service_account_principal():
 
 def test_user_principal():
     subject = AuthenticatedSubject.model_validate({
+        'sub': '123',
         'email': 'test@tensorshield.ai',
         'service_account': False
     })
@@ -29,6 +31,7 @@ def test_user_principal():
 ])
 def test_subject_has_domain_principal_from_email(domain: str, email: str, service_account: bool):
     subject = AuthenticatedSubject.model_validate({
+        'sub': '123',
         'email': email,
         'service_account': service_account
     })
@@ -52,6 +55,7 @@ def test_subject_has_domain_principal_from_groups(
     service_account: bool
 ):
     subject = AuthenticatedSubject.model_validate({
+        'sub': '123',
         'email': email,
         'service_account': service_account,
         'groups': groups

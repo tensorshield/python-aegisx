@@ -21,8 +21,12 @@ class AuthenticatedSubject(Subject):
     method to always return `True`, indicating  that the subject is
     authenticated.
     """
-    email: EmailAddress = pydantic.Field(
+    sub: str = pydantic.Field(
         default=...
+    )
+
+    email: EmailAddress | None = pydantic.Field(
+        default=None
     )
 
     email_verified: bool = pydantic.Field(

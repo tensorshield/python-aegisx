@@ -55,10 +55,7 @@ class AuthorizationContext(pydantic.BaseModel, Generic[PrincipalTypeVar]):
         """Return ``True`` if the :class:`AuthorizationContext` represents
         an authenticated request.
         """
-        return all([
-            self.principal.is_subject(),
-            self.principal.is_authenticated()
-        ])
+        return self.subject.is_authenticated()
 
     def principals(self) -> set[PrincipalTypeVar]:
         p: set[PrincipalTypeVar] = {*self.subject.principals()} # type: ignore

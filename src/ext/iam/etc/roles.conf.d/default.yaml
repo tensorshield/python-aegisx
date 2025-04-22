@@ -1,0 +1,43 @@
+---
+- name: roles/viewer
+  title: Viewer
+  included_permissions:
+  - iam.roles.list
+  - iam.roles.get
+  description: |
+    Permissions for read-only actions that don't affect state, such as viewing
+    (but not modifying) existing resources or data.
+
+- name: roles/editor
+  title: Editor
+  inherited_roles:
+  - roles/viewer
+  included_permissions: []
+  description: |
+    All viewer permissions, plus permissions for actions that modify state,
+    such as changing existing resources.
+
+    The permissions in the Editor role let you create and delete resources
+    for most services. However, the Editor role doesn't contain permissions
+    to perform all actions for all services. 
+
+- name: roles/owner
+  title: Owner
+  inherited_roles:
+  - roles/editor
+  included_permissions:
+  - iam.roles.create
+  - iam.roles.delete
+  - iam.roles.destroy
+  - iam.roles.replace
+  - iam.roles.undelete
+  - iam.roles.update
+  description: |
+    All Editor permissions, plus permissions for actions like the following:
+
+    - Completing sensitive tasks
+    - Managing roles and permissions for a project and all resources
+      within the project
+    - Setting up billing for a project
+
+    The Owner role doesn't contain all permissions for all resources.
