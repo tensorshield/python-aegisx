@@ -19,10 +19,11 @@ import httpx
 from httpx import Request
 from httpx import Response
 
+from aegisx.ext.oauth.models import ClientConfiguration
+from aegisx.ext.oauth.models import TokenResponse
 from aegisx.ext.oauth.types import AccessTokenType
 if TYPE_CHECKING:
     from aegisx.ext.oauth.client import Client
-    from aegisx.ext.oauth.models import TokenResponse
 
 
 C = TypeVar('C', bound='Client')
@@ -34,14 +35,12 @@ class InteractiveAuth(httpx.Auth):
     """Interactive authentication where the resource owner is redirected
     to the authorization endpoint.
     """
-    client_factory: Callable[..., 'Client']
-    refresh_token: str | None
-    access_token: str | None
-    expires_in : int | None
+    access_token: str | None = None
+    expires_in : int | None = None
     obtained: int | None
-    refresh_status_codes: set[int] = {401, 403}
     leeway: int = 15
-    refresh_token: str | None
+    refresh_token: str | None = None
+    refresh_status_codes: set[int] = {401, 403}
     response_type: str
     result: urllib.parse.ParseResult | None = None
     token_type: AccessTokenType | None = None
@@ -71,31 +70,35 @@ class InteractiveAuth(httpx.Auth):
 
     def __init__(
         self,
-        client_factory: Callable[..., C],
+        config: ClientConfiguration,
         *,
         response_type: Literal['code', 'id_token', 'code id_token', 'code id_token token'] = 'code',
         response_mode: Literal['query', 'query.jwt'] = 'query',
+        ephemeral_port: int = 0,
+        grant: TokenResponse | None = None,
         access_token: str | None = None,
         obtained: int | None = None,
         expires_in: int | None = None,
         refresh_token: str | None = None,
-        ephemeral_port: int = 0,
         token_type: AccessTokenType | None = None,
         scope: set[str] | None = None,
         persist: Callable[['TokenResponse'], Awaitable[None]] | None = None
     ):
         self.access_token = access_token
-        self.client_factory = client_factory
+        self.config = config
         self.ephemeral_port = ephemeral_port
         self.expires_in = expires_in
         self.obtained = obtained
-        self.refresh_token = refresh_token
         self.response_mode = response_mode
         self.response_type = response_type
         self.scope = scope
-        self.token_type = token_type
         self.event = Event()
         self._persist = persist
+        if grant is not None:
+            self.access_token = grant.access_token
+            self.expires_in = grant.expires_in
+            self.refresh_token = grant.refresh_token
+            self.token_type = grant.token_type
 
     def authenticate_request(self, request: Request) -> None:
         """Authenticate a request using the access token."""
@@ -107,6 +110,10 @@ class InteractiveAuth(httpx.Auth):
                 raise NotImplementedError(
                     f"Tokens of type {self.token_type} are not implemented."
                 )
+
+    def client_factory(self):
+        from aegisx.ext.oauth.client import Client # TODO
+        return Client.fromconfig(self.config)
 
     def get_ephemeral_port(self) -> int:
         if not self.ephemeral_port:
@@ -215,7 +222,13 @@ class InteractiveAuth(httpx.Auth):
 
     async def refresh(self, request: Request) -> None:
         """Refresh the current access token."""
-        raise NotImplementedError
+        async with self.client_factory() as client:
+            grant = await client.refresh(self.refresh_token)
+            await self.persist(grant)
+            self.access_token = grant.access_token
+            self.expires_in = grant.expires_in
+            self.refresh_token = grant.refresh_token
+            self.token_type = grant.token_type
 
     async def persist(self, grant: 'TokenResponse') -> None:
         if self._persist is None:

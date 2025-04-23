@@ -1,13 +1,18 @@
 import urllib.parse
+from typing import Union
 
 import pydantic
 
 from ._authorizationcodegrant import AuthorizationCodeGrant
+from ._refreshtokenrequest import RefreshTokenRequest
 
 
 class TokenRequest(
     pydantic.RootModel[
-        AuthorizationCodeGrant
+        Union[
+            AuthorizationCodeGrant,
+            RefreshTokenRequest
+        ]
     ]
 ):
     

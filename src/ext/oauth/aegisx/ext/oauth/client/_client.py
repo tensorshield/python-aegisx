@@ -243,6 +243,22 @@ class Client(httpx.AsyncClient):
         return response
 
     @needs_discovery
+    @needs_param('token_endpoint')
+    async def refresh(
+        self,
+        refresh_token: str,
+        metadata: ServerMetadata
+    ) -> TokenResponse:
+        assert self.credential
+        assert metadata.token_endpoint
+        request = TokenRequest.model_validate({
+            'grant_type': 'refresh_token',
+            'refresh_token': refresh_token
+        })
+        self.credential.add_to_grant(request)
+        return await self._grant(metadata.token_endpoint, request)
+
+    @needs_discovery
     @needs_param('userinfo_endpoint')
     async def userinfo(
         self,
