@@ -1,9 +1,9 @@
 import pydantic
 from libcanonical.utils import deephash
 
-from aegisx.ext.oauth.models import ServerMetadata
 from aegisx.ext.oauth.types import HTTPSResourceLocator
 from aegisx.ext.oauth.types import IssuerIdentifier
+from ._servermetadata import ServerMetadata
 
 
 class ClientConfiguration(pydantic.BaseModel):

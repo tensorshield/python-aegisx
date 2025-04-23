@@ -10,6 +10,7 @@ import httpx
 
 from aegisx.ext.oauth.models import AuthorizationResponse
 from aegisx.ext.oauth.models import AuthorizationRequestParameters
+from aegisx.ext.oauth.models import ClientConfiguration
 from aegisx.ext.oauth.models import OIDCToken
 from aegisx.ext.oauth.models import ServerMetadata
 from aegisx.ext.oauth.models import TokenRequest
@@ -21,7 +22,6 @@ from aegisx.ext.oauth.types import HTTPSResourceLocator
 from aegisx.ext.oauth.types import NeedsDiscovery
 from aegisx.ext.oauth.types import ResponseType
 from .auth import ClientSecretCredential
-from ._clientconfiguration import ClientConfiguration
 from ._oidctokenvalidator import OIDCTokenValidator
 
 R = TypeVar('R')

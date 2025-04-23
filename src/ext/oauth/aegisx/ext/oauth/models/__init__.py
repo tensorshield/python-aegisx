@@ -1,5 +1,6 @@
 from ._authorizationrequestparameters import AuthorizationRequestParameters
 from ._authorizationresponse import AuthorizationResponse
+from ._clientconfiguration import ClientConfiguration
 from ._oidcclaimrequest import ClaimRequest
 from ._oidcclaimspec import OIDCClaimSpec
 from ._oidctoken import OIDCToken
@@ -12,6 +13,7 @@ from ._tokenresponse import TokenResponse
 __all__: list[str] = [
     'AuthorizationRequestParameters',
     'AuthorizationResponse',
+    'ClientConfiguration',
     'ClaimRequest',
     'OIDCClaimSpec',
     'OIDCToken',
