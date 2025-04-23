@@ -3,6 +3,7 @@
     "python.analysis.typeCheckingMode": "strict",
     "python.analysis.extraPaths": [
         "${workspaceFolder}/src/main",
+        "${workspaceFolder}/src/ext/fastapi/",
         "${workspaceFolder}/src/ext/google/",
         "${workspaceFolder}/src/ext/iam/",
         "${workspaceFolder}/src/ext/jose/",

@@ -103,11 +103,12 @@ class Client(httpx.AsyncClient):
         discoverable: bool = False
     ):
         self.credential = credential
+        self.discoverable = discoverable
         self.oidc_validator = oidc_validator
 
         # TODO: Add commonly used parameters for now. For any extended features
         # the caller must provide the `metadata` parameter.
-        manual_discovery = not metadata and not discoverable
+        manual_discovery = (not metadata or not metadata.is_discovered()) and not discoverable
         self.metadata = metadata or ServerMetadata.model_validate({
             'issuer': issuer,
             'authorization_endpoint': authorization_endpoint,
@@ -157,7 +158,7 @@ class Client(httpx.AsyncClient):
         return params, metadata.authorization_endpoint.with_query(**q) # type: ignore
 
     async def connect(self):
-        if not self.metadata.is_discovered():
+        if not self.metadata.is_discovered() and self.discoverable:
             await self.metadata.discover(client=self)
         return self
 
@@ -166,7 +167,8 @@ class Client(httpx.AsyncClient):
     async def obtain(
         self,
         request: AuthorizationRequestParameters,
-        response: AuthorizationResponse
+        response: AuthorizationResponse,
+        metadata: ServerMetadata
     ):
         """Obtain a new access token using an authorization code.
         
@@ -177,7 +179,7 @@ class Client(httpx.AsyncClient):
                 endpoint.
         """
         assert self.credential
-        assert self.metadata.token_endpoint
+        assert metadata.token_endpoint
         if not response.code:
             raise ValueError(
                 f"{type(response.root).__name__} does not supply an "
@@ -209,11 +211,11 @@ class Client(httpx.AsyncClient):
         # MUST reject the authorization response and MUST NOT proceed with
         # the authorization grant.
         if response.iss:
-            if not secrets.compare_digest(response.iss, self.metadata.issuer):
+            if not secrets.compare_digest(response.iss, metadata.issuer):
                 raise ValueError(
                     "The \"iss\" parameter sent by the authorization "
                     "server does not match the known metadata: "
-                    f"{self.metadata.issuer}"
+                    f"{metadata.issuer}"
                 )
 
         # The request and response are valid, proceed to
@@ -226,9 +228,9 @@ class Client(httpx.AsyncClient):
             'redirect_uri': request.redirect_uri
         })
         self.credential.add_to_grant(grant)
-        token = await self._grant(self.metadata.token_endpoint, grant)
+        token = await self._grant(metadata.token_endpoint, grant)
         if token.id_token:
-            validator = self.oidc_validator(self, self.metadata, request, token)
+            validator = self.oidc_validator(self, metadata, request, token)
             await token.validate_id_token(validator)
         return token
 

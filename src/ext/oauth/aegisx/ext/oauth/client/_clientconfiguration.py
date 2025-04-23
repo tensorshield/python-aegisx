@@ -8,6 +8,8 @@ from aegisx.ext.oauth.types import IssuerIdentifier
 
 class ClientConfiguration(pydantic.BaseModel):
     """Configuration parameters for OAuth 2.x/OpenID Connect clients."""
+    model_config = {'extra': 'forbid'}
+
     issuer: IssuerIdentifier = pydantic.Field(
         default=...
     )
