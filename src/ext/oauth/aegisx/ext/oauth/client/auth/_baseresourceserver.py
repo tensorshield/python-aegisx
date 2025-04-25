@@ -132,11 +132,22 @@ class BaseResourceServerAuth(httpx.Auth):
             )
         async with self.client_factory() as client:
             response = await client.refresh(self.grant.refresh_token)
-            self.grant = await self.process_response(response)
+            if response.is_error():
+                # Fetch the grant from the repository as another
+                # caller might have expired this access token,
+                # since BaseResourceServerAuth instances can be
+                # long-lived (application scoped).
+                grant = await self.repo.grant(self.name)
+                if grant and grant == self.grant:
+                    self.grant = grant
+                else:
+                    raise NotImplementedError
+            else:
+                self.grant = await self.process_response(response)
 
     async def process_response(self, response: TokenResponse) -> Grant:
         if response.is_error():
-            raise NotImplementedError
+            raise TypeError('Error responses can not be processed.')
         grant = Grant(
             name=self.name,
             grant_type='refresh_token',
