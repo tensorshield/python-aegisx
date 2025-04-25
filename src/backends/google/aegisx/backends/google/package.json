@@ -5,9 +5,17 @@
     "author_email": "immortal.izzy@tensorshield.ai",
     "url": "https://github.com/tensorshield/python-aegisx",
     "install_requires": [
-      "aegisx>0.0.1"
+      "aegisx>=0.1.0a1",
+      "libcanonical>=0.1.4"
     ],
     "extras_require": {
+      "datastore": [
+        "google-cloud-datastore>=2.13.2"
+      ],
+      "oauth": [
+        "aegisx.ext.oauth>=0.0.9",
+        "google-cloud-datastore>=2.13.2"
+      ],
       "develop": [
         "pytest",
         "pytest_asyncio",

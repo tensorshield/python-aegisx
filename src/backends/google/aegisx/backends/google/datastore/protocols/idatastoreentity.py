@@ -1,0 +1,19 @@
+from typing import Any
+from typing import Iterable
+from typing import Iterator
+from typing import ItemsView
+from typing import Protocol
+
+from .idatastorekey import IDatastoreKey
+
+
+class IDatastoreEntity(Protocol):
+    __module__: str = 'canonical.ext.google.protocols'
+    exclude_from_indexes: set[str]
+    key: IDatastoreKey
+    def items(self) -> ItemsView[str, Any]: ...
+    def update(self, obj: Iterable[tuple[str, Any]] | dict[str, Any]) -> None: ...
+    def __iter__(self) -> Iterator[tuple[str, Any]]: ...
+    def __len__(self) -> int: ...
+    def __getitem__(self, k: str) -> Any: ...
+    def __setitem__(self, k: str, v: Any) -> None: ...
