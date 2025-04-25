@@ -110,7 +110,9 @@ class BaseResourceServerAuth(httpx.Auth):
             yield request
 
     async def authorize(self) -> None:
-        raise NotImplementedError
+        raise NotImplementedError(
+            f'{type(self).__name__} does not support the authorization code flow.'
+        )
 
     async def obtain(self, request: httpx.Request) -> None:
         """Obtain a new access token."""
@@ -143,5 +145,8 @@ class BaseResourceServerAuth(httpx.Auth):
             response=response,
             scope=self.scope
         )
-        await self.repo.persist(grant, self.name, self.config)
+        await self.repo.persist(grant, name=self.name, config=self.config)
         return grant
+
+    def __repr__(self):
+        return f"{type(self).__name__}(name='{self.name}')"
