@@ -1,6 +1,7 @@
 from ._authorizationrequestparameters import AuthorizationRequestParameters
 from ._authorizationresponse import AuthorizationResponse
 from ._clientconfiguration import ClientConfiguration
+from ._grant import Grant
 from ._oidcclaimrequest import ClaimRequest
 from ._oidcclaimspec import OIDCClaimSpec
 from ._oidctoken import OIDCToken
@@ -15,6 +16,7 @@ __all__: list[str] = [
     'AuthorizationResponse',
     'ClientConfiguration',
     'ClaimRequest',
+    'Grant',
     'OIDCClaimSpec',
     'OIDCToken',
     'RequestedClaims',
