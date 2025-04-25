@@ -9,7 +9,7 @@
       "aegisx.ext.jose>=0.1.0",
       "aegisx.ext.rfc3161>=0.0.3",
       "cel-python",
-      "libcanonical>=0.1.2",
+      "libcanonical>=0.1.4",
       "pydantic>=2"
     ],
     "extras_require": {
