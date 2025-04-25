@@ -138,7 +138,7 @@ class BaseResourceServerAuth(httpx.Auth):
                 # since BaseResourceServerAuth instances can be
                 # long-lived (application scoped).
                 grant = await self.repo.grant(self.name)
-                if grant and grant == self.grant:
+                if grant and grant != self.grant:
                     self.grant = grant
                 else:
                     raise NotImplementedError
