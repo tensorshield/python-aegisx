@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 class IClientRepository:
 
-    async def get(self, name: str) -> ClientConfiguration | None:
+    async def get(self, name: str) -> Union['ClientConfiguration', None]:
         ...
 
     async def grant(
