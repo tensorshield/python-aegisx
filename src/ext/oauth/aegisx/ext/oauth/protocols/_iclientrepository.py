@@ -18,17 +18,19 @@ class IClientRepository:
         ...
 
     @overload
-    async def persist(self, obj: 'ClientConfiguration') -> None:
+    async def persist(self, obj: 'ClientConfiguration', *, name: str) -> None:
         ...
 
     @overload
-    async def persist(self, obj: 'Grant', name: str, config: 'ClientConfiguration') -> None:
+    async def persist(self, obj: 'Grant', *, name: str, config: 'ClientConfiguration') -> None:
         ...
 
     @functools.singledispatchmethod
     async def persist(
         self,
         obj: Union['ClientConfiguration', 'Grant'],
-        *args: Any
+        *,
+        name: str | None = None,
+        **kwargs: Any
     ) -> None:
         ...

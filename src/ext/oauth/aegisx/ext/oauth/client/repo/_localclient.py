@@ -20,6 +20,10 @@ class LocalClientRepository(ClientRepository):
     grants_dir = AEGISX_GRANTS_DIR
 
     @staticmethod
+    def client_name(name: str):
+        return hashlib.sha256(name.encode()).hexdigest()
+
+    @staticmethod
     def grant_name(name: str):
         return hashlib.sha256(name.encode()).hexdigest()
 
@@ -30,7 +34,7 @@ class LocalClientRepository(ClientRepository):
             os.makedirs(self.grants_dir)
 
     async def get(self, name: str) -> ClientConfiguration | None:
-        filename = self.clients_dir.joinpath(f'{name}.yaml')
+        filename = self.clients_dir.joinpath(self.client_name(name))
         if not filename.exists():
             return None
         with open(filename) as f:
@@ -44,9 +48,21 @@ class LocalClientRepository(ClientRepository):
         with open(filename, 'r') as f:
             return Grant.model_validate_json(f.read())
 
+    async def persist_client_config(
+        self,
+        obj: ClientConfiguration,
+        *,
+        name: str
+    ) -> None:
+        filename = self.clients_dir.joinpath(self.client_name(name))
+        with open(filename, 'w') as f:
+            f.write(obj.model_dump_json(exclude_none=True))
+        os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR)
+
     async def persist_grant(
         self,
         obj: Grant,
+        *,
         name: str,
         config: ClientConfiguration
     ) -> None:
