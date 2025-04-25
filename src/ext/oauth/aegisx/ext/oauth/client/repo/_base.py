@@ -17,6 +17,9 @@ class ClientRepository(IClientRepository):
         """Lookup a grant from the persistent data storage."""
         raise NotImplementedError
 
+    async def get(self, name: str) -> ClientConfiguration | None:
+        raise NotImplementedError
+
     @overload
     async def persist(self, obj: ClientConfiguration, *, name: str) -> None:
         ...
