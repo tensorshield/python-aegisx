@@ -3,6 +3,7 @@ from collections import defaultdict
 from functools import wraps
 from typing import Any
 from typing import Callable
+from typing import Literal
 
 # TODO: This is a literal copy of typer.__init__
 from shutil import get_terminal_size as get_terminal_size
@@ -107,7 +108,11 @@ class AsyncTyper(Typer):
 
         return decorator
 
-    def add_event_handler(self, event_type: str, func: Callable[..., Any]) -> None:
+    def add_event_handler(
+        self,
+        event_type: Literal['startup', 'shutdown'],
+        func: Callable[..., Any]
+    ) -> None:
         self.event_handlers[event_type].append(func)
 
     async def run_event_handlers(self, event_type: str):
