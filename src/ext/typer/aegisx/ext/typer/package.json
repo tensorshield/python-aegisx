@@ -1,0 +1,31 @@
+{
+    "name": "aegisx.ext.typer",
+    "description": "Typer integration with AegisX",
+    "author": "Immortal Izzy",
+    "author_email": "immortal.izzy@tensorshield.ai",
+    "url": "https://github.com/tensorshield/python-aegisx",
+    "install_requires": [
+      "typer"
+    ],
+    "extras_require": {
+      "develop": [
+        "pytest",
+        "pytest_asyncio",
+        "coverage"
+      ]
+    },
+    "classifiers": [
+       "Development Status :: 4 - Beta",
+       "Intended Audience :: Developers",
+       "License :: OSI Approved :: MIT License",
+       "Operating System :: MacOS",
+       "Operating System :: POSIX",
+       "Operating System :: POSIX :: Linux",
+       "Programming Language :: Python :: 3.13",
+       "Programming Language :: Python :: 3.14",
+       "Programming Language :: Python :: 3 :: Only",
+       "Topic :: Communications",
+       "Topic :: Software Development :: Libraries"
+    ]
+  }
+  
