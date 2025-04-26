@@ -9,6 +9,7 @@
         "${workspaceFolder}/src/ext/jose/",
         "${workspaceFolder}/src/ext/oauth/",
         "${workspaceFolder}/src/ext/rfc3161/",
+        "${workspaceFolder}/src/ext/uvicorn/",
         "${workspaceFolder}/src/backends/azure/",
         "${workspaceFolder}/src/backends/google/"
     ],

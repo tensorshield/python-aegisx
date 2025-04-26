@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import time
 from typing import AsyncGenerator
 from typing import Iterable
@@ -23,6 +25,7 @@ class BaseResourceServerAuth(httpx.Auth):
     ephemeral_port: int
     grant: Grant | None
     leeway: int = 0
+    logger: logging.Logger = logging.getLogger(__name__)
     refresh_status_codes: set[int]
     response_mode: str
     response_type: str
@@ -39,11 +42,14 @@ class BaseResourceServerAuth(httpx.Auth):
         refresh_status_codes: set[int] = {401, 403},
         response_type: Literal['code', 'id_token', 'code id_token', 'code id_token token'] = 'code',
         response_mode: Literal['query', 'query.jwt'] = 'query',
-        ephemeral_port: int = 0
+        ephemeral_port: int = 0,
+        logger: logging.Logger | None = None
     ):
         self.config = config
         self.ephemeral_port = ephemeral_port
         self.grant = None
+        self.lock = asyncio.Lock()
+        self.logger = logger or self.logger
         self.name = name
         self.refresh_status_codes = refresh_status_codes
         self.response_mode = response_mode
@@ -97,15 +103,20 @@ class BaseResourceServerAuth(httpx.Auth):
     ) -> AsyncGenerator[httpx.Request, httpx.Response]:
         if self.grant is None:
             self.grant = await self.repo.grant(self.name)
-        if not self.grant or not self.grant.access_token or self.must_refresh(request):
-            await self.obtain(request)
+        async with self.lock:
+            if not self.grant\
+            or not self.grant.access_token\
+            or self.must_refresh(request):
+                await self.obtain(request)
         self.authenticate_request(request)
 
         assert self.grant is not None
         assert self.grant.access_token is not None
         response = yield request
         if self.is_invalid(response):
-            await self.obtain(request)
+            await response.aread()
+            async with self.lock:
+                await self.obtain(request)
             self.authenticate_request(request)
             yield request
 
@@ -123,25 +134,26 @@ class BaseResourceServerAuth(httpx.Auth):
 
     async def refresh(self, request: httpx.Request) -> None:
         """Refresh the current access token."""
-        if not self.grant:
+        # Fetch the grant from the repository as another
+        # caller might have expired this access token,
+        # since BaseResourceServerAuth instances can be
+        # long-lived (application scoped).
+        grant = await self.repo.grant(self.name)
+        if not grant:
             raise TypeError(f'Grant {self.name} does not exist.')
-        if self.grant and not self.grant.refresh_token:
+        if grant and not grant.refresh_token:
             raise TypeError(
-                f'Grant "{self.grant.grant_type}" did not provide a '
+                f'Grant "{grant.grant_type}" did not provide a '
                 'refresh token.'
             )
         async with self.client_factory() as client:
-            response = await client.refresh(self.grant.refresh_token)
+            self.logger.info(
+                'Refreshing access token for grant %s',
+                self.name
+            )
+            response = await client.refresh(grant.refresh_token)
             if response.is_error():
-                # Fetch the grant from the repository as another
-                # caller might have expired this access token,
-                # since BaseResourceServerAuth instances can be
-                # long-lived (application scoped).
-                grant = await self.repo.grant(self.name)
-                if grant and grant != self.grant:
-                    self.grant = grant
-                else:
-                    raise NotImplementedError
+                raise NotImplementedError(response.root)
             else:
                 self.grant = await self.process_response(response)
 
@@ -157,6 +169,10 @@ class BaseResourceServerAuth(httpx.Auth):
             scope=self.scope
         )
         await self.repo.persist(grant, name=self.name, config=self.config)
+        self.logger.info(
+            'Obtained fresh access token for grant %s',
+            self.name
+        )
         return grant
 
     def __repr__(self):
