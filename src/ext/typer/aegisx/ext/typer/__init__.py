@@ -4,10 +4,11 @@ from functools import wraps
 from typing import Any
 from typing import Callable
 from typing import Literal
+from typing import Optional
+from typing import Union
 
 # TODO: This is a literal copy of typer.__init__
 from shutil import get_terminal_size as get_terminal_size
-
 from click.exceptions import Abort as Abort
 from click.exceptions import BadParameter as BadParameter
 from click.exceptions import Exit as Exit
@@ -29,12 +30,13 @@ from click.utils import get_app_dir as get_app_dir
 from click.utils import get_binary_stream as get_binary_stream
 from click.utils import get_text_stream as get_text_stream
 from click.utils import open_file as open_file
-
 from typer import colors as colors
+from typer.core import TyperGroup
 from typer.main import Typer as Typer
 from typer.main import run as run
 from typer.models import CallbackParam as CallbackParam
 from typer.models import Context as Context
+from typer.models import Default
 from typer.models import FileBinaryRead as FileBinaryRead
 from typer.models import FileBinaryWrite as FileBinaryWrite
 from typer.models import FileText as FileText
@@ -87,6 +89,52 @@ _typer_developer_exception_attr_name = "__typer_developer_exception__"
 
 class AsyncTyper(Typer):
     event_handlers: defaultdict[str, list[Callable[..., Any]]] = defaultdict(list)
+
+    def add_typer(  # type: ignore
+        self,
+        typer_instance: "AsyncTyper",
+        *,
+        name: Optional[str] = Default(None),
+        cls: Optional[type[TyperGroup]] = Default(None),
+        invoke_without_command: bool = Default(False),
+        no_args_is_help: bool = Default(False),
+        subcommand_metavar: Optional[str] = Default(None),
+        chain: bool = Default(False),
+        result_callback: Optional[Callable[..., Any]] = Default(None),
+        # Command
+        context_settings: Optional[dict[Any, Any]] = Default(None),
+        callback: Optional[Callable[..., Any]] = Default(None),
+        help: Optional[str] = Default(None),
+        epilog: Optional[str] = Default(None),
+        short_help: Optional[str] = Default(None),
+        options_metavar: str = Default("[OPTIONS]"),
+        add_help_option: bool = Default(True),
+        hidden: bool = Default(False),
+        deprecated: bool = Default(False),
+        # Rich settings
+        rich_help_panel: Union[str, None] = Default(None),
+    ) -> None:
+        typer_instance.event_handlers.update(self.event_handlers)
+        return super().add_typer(
+            typer_instance=typer_instance,
+            name=name,
+            cls=cls,
+            invoke_without_command=invoke_without_command,
+            no_args_is_help=no_args_is_help,
+            subcommand_metavar=subcommand_metavar,
+            chain=chain,
+            result_callback=result_callback,
+            context_settings=context_settings,
+            callback=callback,
+            help=help,
+            epilog=epilog,
+            short_help=short_help,
+            options_metavar=options_metavar,
+            add_help_option=add_help_option,
+            hidden=hidden,
+            deprecated=deprecated,
+            rich_help_panel=rich_help_panel
+        )
 
     def async_command(self, *args: Any, **kwargs: Any):
         def decorator(async_func: Callable[..., Any]):
