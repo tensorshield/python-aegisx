@@ -77,6 +77,7 @@ def run(
     app_dir: str | None = None,
     factory: bool = False,
     h11_max_incomplete_event_size: int | None = None,
+    running: asyncio.AbstractEventLoop | None = None
 ) -> None:
     if app_dir is not None:
         sys.path.insert(0, app_dir)
@@ -144,7 +145,7 @@ def run(
             sock = config.bind_socket()
             Multiprocess(config, target=server.run, sockets=[sock]).run()
         else:
-            server.run()
+            server.run(loop=running)
     except KeyboardInterrupt:
         pass  # pragma: full coverage
     finally:

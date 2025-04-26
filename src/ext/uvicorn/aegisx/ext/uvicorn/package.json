@@ -1,5 +1,5 @@
 {
-    "name": "aegisx.ext.google",
+    "name": "aegisx.ext.uvicorn",
     "description": "Uvicorn integration with AegisX",
     "author": "Immortal Izzy",
     "author_email": "immortal.izzy@tensorshield.ai",
