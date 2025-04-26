@@ -1,8 +1,8 @@
-from .main import run
+from .main import create_server
 from .utils import setup_event_loop
 
 
 __all__: list[str] = [
-    'run',
+    'create_server',
     'setup_event_loop',
 ]

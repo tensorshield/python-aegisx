@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import os
 import ssl
 import sys
@@ -19,8 +18,6 @@ from uvicorn.config import (
     LoopSetupType,
     WSProtocolType,
 )
-from uvicorn.supervisors import ChangeReload
-from uvicorn.supervisors import Multiprocess
 
 from .server import Server
 
@@ -28,7 +25,7 @@ from .server import Server
 STARTUP_FAILURE = 3
 
 
-def run(
+def create_server(
     app: ASGIApplication | Callable[..., Any] | str,
     *,
     host: str = "127.0.0.1",
@@ -78,7 +75,7 @@ def run(
     factory: bool = False,
     h11_max_incomplete_event_size: int | None = None,
     running: asyncio.AbstractEventLoop | None = None
-) -> None:
+) -> Server:
     if app_dir is not None:
         sys.path.insert(0, app_dir)
 
@@ -130,27 +127,4 @@ def run(
         factory=factory,
         h11_max_incomplete_event_size=h11_max_incomplete_event_size,
     )
-    server = Server(config=config)
-
-    if (config.reload or config.workers > 1) and not isinstance(app, str):
-        logger = logging.getLogger("uvicorn.error")
-        logger.warning("You must pass the application as an import string to enable 'reload' or 'workers'.")
-        sys.exit(1)
-
-    try:
-        if config.should_reload:
-            sock = config.bind_socket()
-            ChangeReload(config, target=server.run, sockets=[sock]).run()
-        elif config.workers > 1:
-            sock = config.bind_socket()
-            Multiprocess(config, target=server.run, sockets=[sock]).run()
-        else:
-            server.run(loop=running)
-    except KeyboardInterrupt:
-        pass  # pragma: full coverage
-    finally:
-        if config.uds and os.path.exists(config.uds):
-            os.remove(config.uds)  # pragma: py-win32
-
-    if not server.started and not config.should_reload and config.workers == 1:
-        sys.exit(STARTUP_FAILURE)
+    return Server(config=config)
