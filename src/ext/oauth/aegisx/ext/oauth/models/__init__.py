@@ -1,4 +1,5 @@
 from ._authorizationrequestparameters import AuthorizationRequestParameters
+from ._authorizationrequeststate import AuthorizationRequestState
 from ._authorizationresponse import AuthorizationResponse
 from ._clientconfiguration import ClientConfiguration
 from ._grant import Grant
@@ -13,6 +14,7 @@ from ._tokenresponse import TokenResponse
 
 __all__: list[str] = [
     'AuthorizationRequestParameters',
+    'AuthorizationRequestState',
     'AuthorizationResponse',
     'ClientConfiguration',
     'ClaimRequest',
