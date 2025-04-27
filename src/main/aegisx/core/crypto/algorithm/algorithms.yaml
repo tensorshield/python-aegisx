@@ -44,6 +44,21 @@ ES512:
   crv: P-521
   dig: sha512
 
+BS256:
+  kty: EC
+  crv: B-256
+  dig: sha256
+
+BS384:
+  kty: EC
+  crv: B-384
+  dig: sha384
+
+BS512:
+  kty: EC
+  crv: B-512
+  dig: sha512
+
 #1.2.840.113549.1.1.11: *SHA256WITHRSA
 #1.2.840.113549.1.1.12: *SHA384WITHRSA
 #1.2.840.113549.1.1.13: *SHA512WITHRSA

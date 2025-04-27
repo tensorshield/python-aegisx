@@ -1,3 +1,4 @@
+from typing import Any
 from typing import ClassVar
 
 import pydantic
@@ -12,3 +13,11 @@ class SigningAlgorithm(BaseAlgorithm):
     dig: DigestAlgorithm | None = pydantic.Field(
         default=None
     )
+
+    def sign(
+        self,
+        key: Any,
+        message: bytes,
+        prehashed: bool = False
+    ) -> bytes:
+        raise NotImplementedError
