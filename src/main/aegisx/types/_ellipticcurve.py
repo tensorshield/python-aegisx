@@ -165,4 +165,4 @@ class EllipticCurve(OIDMapped):
         return self._name
 
     def __repr__(self):
-        return f'<Curve: {self._name} (alias: {self._alias}, name: {self.name}, oid: {self.oid})>'
+        return f'<Curve: {self._name} (input: {self._alias}, name: {self.name}, oid: {self.oid})>'
