@@ -32,7 +32,7 @@ class EllipticCurve(OIDMapped):
         '1.3.101.113'                                       : ('oid', 'Ed448'),
         'P-256'                                             : ('literal', 'P-256'),
         'P-384'                                             : ('literal', 'P-384'),
-        'P-512'                                             : ('literal', 'P-512'),
+        'P-521'                                             : ('literal', 'P-521'),
         'P-256K'                                            : ('literal', 'P-256K'),
         'X25519'                                            : ('literal', 'X25519'),
         'X448'                                              : ('literal', 'X448'),
@@ -119,7 +119,14 @@ class EllipticCurve(OIDMapped):
         _: CoreSchema,
         handler: GetJsonSchemaHandler
     ) -> JsonSchemaValue:
-        return handler(core_schema.str_schema())
+        return handler(
+            core_schema.str_schema(
+                serialization=core_schema.plain_serializer_function_ser_schema(
+                    cls.serialize,
+                    info_arg=True
+                )
+            )
+        )
 
     @classmethod
     def new(
@@ -156,10 +163,9 @@ class EllipticCurve(OIDMapped):
 
     def serialize(
         self,
-        value: Self,
         info: pydantic.SerializationInfo
     ):
-        return value._name
+        return self._name
 
     def __str__(self):
         return self._name
