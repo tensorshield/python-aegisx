@@ -8,4 +8,4 @@ class OIDMapped:
 
     def __init_subclass__(cls) -> None:
         cls.__oid__mapping__ = copy.deepcopy(cls.__oid__mapping__)
-        cls.__source_mapping__ = {v: k for k, v in cls.__oid__mapping__.items()}
+        cls.__source_mapping__ = {v: k for k, v in cls.__oid__mapping__.items() if v[0]}

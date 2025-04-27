@@ -18,9 +18,9 @@ from ._oidmapped import OIDMapped
 class DigestAlgorithm(OIDMapped):
     __module__: str = 'aegisx.types'
     __oid__mapping__ = {
-        '2.16.840.1.101.3.4.2.1': ('nist', 'sha256'),
-        '2.16.840.1.101.3.4.2.2': ('nist', 'sha384'),
-        '2.16.840.1.101.3.4.2.3': ('nist', 'sha512'),
+        '2.16.840.1.101.3.4.2.1': ('oid', 'sha256'),
+        '2.16.840.1.101.3.4.2.2': ('oid', 'sha384'),
+        '2.16.840.1.101.3.4.2.3': ('oid', 'sha512'),
         'sha256': ('', 'sha256'),
         'sha384': ('', 'sha384'),
         'sha512': ('', 'sha512'),
@@ -36,15 +36,7 @@ class DigestAlgorithm(OIDMapped):
     def __get_pydantic_core_schema__(cls, *_: Any) -> CoreSchema:
         return core_schema.json_or_python_schema(
             json_schema=core_schema.with_info_plain_validator_function(cls.discover),
-            python_schema=core_schema.union_schema([
-                core_schema.chain_schema([
-                    core_schema.is_instance_schema(cls),
-                ]),
-                core_schema.chain_schema([
-                    core_schema.is_instance_schema(str),
-                    core_schema.with_info_plain_validator_function(cls.discover),
-                ]),
-            ]),
+            python_schema=core_schema.with_info_plain_validator_function(cls.discover),
             serialization=core_schema.plain_serializer_function_ser_schema(str),
         )
 
@@ -59,9 +51,12 @@ class DigestAlgorithm(OIDMapped):
     @classmethod
     def discover(
         cls,
-        value: str,
+        value: str | Self,
         info: pydantic.ValidationInfo
     ) -> Self:
+        if isinstance(value, cls):
+            return value
+        assert isinstance(value, str)
         if value not in cls.__oid__mapping__:
             raise ValueError(f'Unknown digest algorithm: {value}')
         source, name = cls.__oid__mapping__[value]
@@ -101,7 +96,7 @@ class DigestAlgorithm(OIDMapped):
         raise ValueError(f'Unsupported hash: {self.name}')
 
     def __str__(self):
-        return self.oid or self.name
+        return self.name
 
     def __repr__(self):
-        return f'<DigestAlgorithm: {self.name}>'
+        return f'<DigestAlgorithm: {self.name} (oid: {self.oid})>'
