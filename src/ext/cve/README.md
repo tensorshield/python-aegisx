@@ -14,7 +14,11 @@ is essential.**
 
 ## Changelog
 
+### 1.0.0
+
+- **CVE-2025-43859** Pin `h11>=0.16.0` in the `fastapi` extra.
+
 ### 0.0.1
 
-- **CVE-2024-12797** Pin `cryptography>=0.44.0`
+- **CVE-2024-12797** Pin `cryptography>=0.44.0`.
 - **CVE-2024-47874** Pin `starlette>=0.40.0` in the `fastapi` extra.

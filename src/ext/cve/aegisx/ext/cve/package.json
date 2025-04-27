@@ -10,6 +10,7 @@
     "extras_require": {
       "develop": [],
       "fastapi": [
+        "h11>=0.16.0",
         "starlette>=0.40.0"
       ]
     },
