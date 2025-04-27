@@ -1,5 +1,3 @@
-import _hashlib
-import hashlib
 from typing import overload
 from typing import Any
 from typing import Literal
@@ -67,31 +65,23 @@ class DigestAlgorithm(OIDMapped):
         self.name = name
         self.oid = oid
 
-    def digest(self, value: bytes) -> bytes:
-        hasher = self.new()
-        hasher.update(value)
-        return hasher.digest()
-
-    def hexdigest(self, value: bytes):
-        return bytes.hex(self.digest(value))
-
     @overload
-    def new(self) -> _hashlib.HASH: # type: ignore
+    def hash(self) -> str: # type: ignore
         ...
 
     @overload
-    def new(self, mode: Literal['cryptography']) -> hashes.Hash:
+    def hash(self, mode: Literal['cryptography']) -> hashes.HashAlgorithm:
         ...
 
-    def new(
+    def hash(
         self,
         mode: Literal['stdlib', 'cryptography'] = 'stdlib',
-    ) -> hashes.Hash | _hashlib.HASH: # type: ignore
+    ) -> hashes.HashAlgorithm | str: # type: ignore
         match mode:
             case 'cryptography':
                 raise NotImplementedError
             case 'stdlib':
-                return hashlib.new(self.name, usedforsecurity=True)
+                return self.name
 
         raise ValueError(f'Unsupported hash: {self.name}')
 
