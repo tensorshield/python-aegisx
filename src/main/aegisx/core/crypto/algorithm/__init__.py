@@ -7,6 +7,7 @@ from typing import Union
 import pydantic
 import yaml
 
+from aegisx.types import DigestAlgorithm
 from ._ecdsasigningalgorithm import ECDSASigningAlgorithm
 from ._eddsasigningalgorithm import EdDSASigningAlgorithm
 from ._hmacsigningalgorithm import HMACSigningAlgorithm
@@ -29,6 +30,10 @@ class Algorithm(
     ]
 ):
     __registry__: ClassVar[dict[str, Any]] = {}
+
+    @property
+    def dig(self) -> DigestAlgorithm | None:
+        return getattr(self.root, 'dig', None)
 
     @classmethod
     def load_defaults(cls, defaults: pathlib.Path = DEFAULT_ALGORITHM_SPEC):
@@ -59,6 +64,26 @@ class Algorithm(
                 raise ValueError(f'Unknown algorithm: {name}')
             values = cls.__registry__[str(name)]
         return values
+
+    def generate(self) -> Any:
+        return self.root.generate()
+
+    def sign(
+        self,
+        key: Any,
+        message: bytes,
+        prehashed: bool = False
+    ) -> bytes:
+        return self.root.sign(key, message, prehashed)
+
+    def verify(
+        self,
+        key: Any,
+        signature: bytes,
+        message: bytes,
+        prehashed: bool = False
+    ) -> bool:
+        return self.root.verify(key, signature, message, prehashed)
 
     def __repr__(self):
         return f'Algorithm(kty="{self.root.kty}", use="{self.root.use}")'

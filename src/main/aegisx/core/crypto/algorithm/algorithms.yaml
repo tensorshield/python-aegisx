@@ -1,63 +1,88 @@
 ---
 RS256: &SHA256WITHRSA
+  alg: RS256
   kty: RSA
   dig: sha256
   pad: pkcs1_5
 
 RS384: &SHA384WITHRSA
+  alg: RS284
   kty: RSA
   dig: sha384
   pad: pkcs1_5
 
 RS512: &SHA512WITHRSA
+  alg: RS512
   kty: RSA
   dig: sha512
   pad: pkcs1_5
 
 PS256: &SHA256WITHRSAMGF1
+  alg: PS256
   kty: RSA
   dig: sha256
   pad: mgf1
 
 PS384: &SHA384WITHRSAMGF1
+  alg: PS384
   kty: RSA
   dig: sha384
   pad: mgf1
 
 PS512: &SHA512WITHRSAMGF1
+  alg: PS512
   kty: RSA
   dig: sha512
   pad: mgf1
 
 ES256:
+  alg: ES256
   kty: EC
   crv: P-256
   dig: sha256
+  raw: false
 
 ES384:
+  alg: ES384
   kty: EC
   crv: P-384
   dig: sha384
+  raw: false
 
 ES512:
+  alg: ES512
   kty: EC
   crv: P-521
   dig: sha512
+  raw: false
 
 BS256:
+  alg: BS256
   kty: EC
   crv: B-256
   dig: sha256
+  raw: false
 
 BS384:
+  alg: BS384
   kty: EC
   crv: B-384
   dig: sha384
+  raw: false
 
 BS512:
+  alg: BS512
   kty: EC
   crv: B-512
   dig: sha512
+  raw: false
+
+ES256K:
+  alg: ES256K
+  kty: EC
+  crv: P-256K
+  dig: sha256
+  raw: false
 
 #1.2.840.113549.1.1.11: *SHA256WITHRSA
 #1.2.840.113549.1.1.12: *SHA384WITHRSA

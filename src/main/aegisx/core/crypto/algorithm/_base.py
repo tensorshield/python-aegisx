@@ -1,3 +1,4 @@
+from typing import Any
 from typing import ClassVar
 
 import pydantic
@@ -21,3 +22,23 @@ class BaseAlgorithm(pydantic.BaseModel, extra='forbid'):
         if value is not None and str(value) not in cls.__supported_key_types__:
             raise ValueError(f'Unsupported key type: {value}')
         return value
+
+    def generate(self) -> Any:
+        raise NotImplementedError
+
+    def sign(
+        self,
+        key: Any,
+        message: bytes,
+        prehashed: bool = False
+    ) -> bytes:
+        raise NotImplementedError
+
+    def verify(
+        self,
+        key: Any,
+        signature: bytes,
+        message: bytes,
+        prehashed: bool = False
+    ) -> bool:
+        raise NotImplementedError

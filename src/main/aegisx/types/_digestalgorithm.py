@@ -16,18 +16,33 @@ from ._oidmapped import OIDMapped
 class DigestAlgorithm(OIDMapped):
     __module__: str = 'aegisx.types'
     __oid__mapping__ = {
-        '2.16.840.1.101.3.4.2.1': ('oid', 'sha256'),
-        '2.16.840.1.101.3.4.2.2': ('oid', 'sha384'),
-        '2.16.840.1.101.3.4.2.3': ('oid', 'sha512'),
-        'sha256': ('', 'sha256'),
-        'sha384': ('', 'sha384'),
-        'sha512': ('', 'sha512'),
+        '2.16.840.1.101.3.4.2.1'    : ('oid', 'sha256'),
+        '2.16.840.1.101.3.4.2.2'    : ('oid', 'sha384'),
+        '2.16.840.1.101.3.4.2.3'    : ('oid', 'sha512'),
+        '2.16.840.1.101.3.4.2.8'    : ('oid', 'sha3_256'),
+        '2.16.840.1.101.3.4.2.9'    : ('oid', 'sha3_384'),
+        '2.16.840.1.101.3.4.2.10'   : ('oid', 'sha3_512'),
+        '1.3.6.1.4.1.1722.12.2.1.16': ('oid', 'blake2b512'),
+        '1.3.6.1.4.1.1722.12.2.2.8' : ('oid', 'blake2s256'),
+        'sha256'                    : ('', 'sha256'),
+        'sha384'                    : ('', 'sha384'),
+        'sha512'                    : ('', 'sha512'),
+        'sha3_256'                  : ('', 'sha3_256'),
+        'sha3_384'                  : ('', 'sha3_384'),
+        'sha3_512'                  : ('', 'sha3_512'),
+        'blake2b512'                : ('', 'blake2b512'),
+        'blake2s256'                : ('', 'blake2s256'),
     }
 
-    __cryptography_hashes__: dict[str, type[hashes.HashAlgorithm]] = {
-        'sha256': hashes.SHA256,
-        'sha384': hashes.SHA384,
-        'sha512': hashes.SHA512,
+    __cryptography_hashes__: dict[str, tuple[type[hashes.HashAlgorithm], list[Any]]] = {
+        'sha256'    : (hashes.SHA256, []),
+        'sha384'    : (hashes.SHA384, []),
+        'sha512'    : (hashes.SHA512, []),
+        'sha3_256'  : (hashes.SHA3_256, []),
+        'sha3_384'  : (hashes.SHA3_384, []),
+        'sha3_512'  : (hashes.SHA3_512, []),
+        'blake2b512': (hashes.BLAKE2b, [64]),
+        'blake2s256': (hashes.BLAKE2s, [32])
     }
 
     @classmethod
@@ -65,6 +80,11 @@ class DigestAlgorithm(OIDMapped):
         self.name = name
         self.oid = oid
 
+    def digest(self, value: bytes) -> bytes:
+        h = hashes.Hash(self.hash('cryptography'))
+        h.update(value)
+        return h.finalize()
+
     @overload
     def hash(self) -> str: # type: ignore
         ...
@@ -79,7 +99,8 @@ class DigestAlgorithm(OIDMapped):
     ) -> hashes.HashAlgorithm | str: # type: ignore
         match mode:
             case 'cryptography':
-                raise NotImplementedError
+                HashAlgorithm, args = self.__cryptography_hashes__[self.name]
+                return HashAlgorithm(*args)
             case 'stdlib':
                 return self.name
 

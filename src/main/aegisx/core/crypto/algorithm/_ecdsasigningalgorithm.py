@@ -1,12 +1,16 @@
+import pydantic
 from aegisx.types import EllipticCurve
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives.asymmetric.ec import generate_private_key
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePrivateKey
 from cryptography.hazmat.primitives.asymmetric.ec import EllipticCurvePublicKey
 from cryptography.hazmat.primitives.asymmetric.ec import ECDSA
+from cryptography.hazmat.primitives.asymmetric.utils import encode_dss_signature
 from cryptography.hazmat.primitives.asymmetric.utils import Prehashed
 from cryptography.hazmat.primitives.hashes import HashAlgorithm
+from libcanonical.utils.encoding import bytes_to_number
 
+from aegisx.core.crypto.utils import normalize_ec_signature
 from ._ellipticcurvealgorithm import EllipticCurveAlgorithm
 from ._signingalgorithm import SigningAlgorithm
 
@@ -18,7 +22,15 @@ class ECDSASigningAlgorithm(SigningAlgorithm, EllipticCurveAlgorithm):
     __supported_curves__ = set(EllipticCurve.__cryptography_curves__.keys())
     __supported_key_types__ = {'EC'}
 
-    def generate(self):
+    alg: str | None = pydantic.Field(
+        default=None
+    )
+
+    raw: bool = pydantic.Field(
+        default=True
+    )
+
+    def generate(self) -> EllipticCurvePrivateKey:
         assert self.crv.curve_class
         return generate_private_key(self.crv.curve_class())
 
@@ -31,10 +43,16 @@ class ECDSASigningAlgorithm(SigningAlgorithm, EllipticCurveAlgorithm):
         assert self.dig
         assert isinstance(key, EllipticCurvePrivateKey)
         h = self.dig.hash('cryptography')
-        return key.sign(
+        sig = key.sign(
             message,
             self._get_signature_algorithm(h, message, prehashed)
         )
+        if not self.raw:
+            sig = normalize_ec_signature(
+                l=(key.curve.key_size + 7) // 8,
+                sig=sig
+            )
+        return sig
 
     def verify(
         self,
@@ -45,6 +63,12 @@ class ECDSASigningAlgorithm(SigningAlgorithm, EllipticCurveAlgorithm):
     ):
         assert self.dig
         assert isinstance(key, EllipticCurvePublicKey)
+        if not self.raw:
+            n = (key.curve.key_size + 7) // 8
+            signature = encode_dss_signature(
+                bytes_to_number(signature[:n]),
+                bytes_to_number(signature[n:]),
+            )
         h = self.dig.hash('cryptography')
         try:
             key.verify(
