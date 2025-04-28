@@ -3,37 +3,85 @@ RS256: &SHA256WITHRSA
   alg: RS256
   kty: RSA
   dig: sha256
-  pad: pkcs1_5
+  pad: EMSA-PKCS1-v1_5
+  use: sig
 
 RS384: &SHA384WITHRSA
-  alg: RS284
+  alg: RS384
   kty: RSA
   dig: sha384
-  pad: pkcs1_5
+  pad: EMSA-PKCS1-v1_5
+  use: sig
 
 RS512: &SHA512WITHRSA
   alg: RS512
   kty: RSA
   dig: sha512
-  pad: pkcs1_5
+  pad: EMSA-PKCS1-v1_5
+  use: sig
+
+RS256-SHA3:
+  alg: RS256-SHA3
+  kty: RSA
+  dig: sha3_256
+  pad: EMSA-PKCS1-v1_5
+  use: sig
+
+RS384-SHA3:
+  alg: RS384-SHA3
+  kty: RSA
+  dig: sha3_384
+  pad: EMSA-PKCS1-v1_5
+  use: sig
+
+RS512-SHA3:
+  alg: RS512-SHA3
+  kty: RSA
+  dig: sha3_512
+  pad: EMSA-PKCS1-v1_5
+  use: sig
 
 PS256: &SHA256WITHRSAMGF1
   alg: PS256
   kty: RSA
   dig: sha256
-  pad: mgf1
+  pad: EMSA-PSS
+  use: sig
 
 PS384: &SHA384WITHRSAMGF1
   alg: PS384
   kty: RSA
   dig: sha384
-  pad: mgf1
+  pad: EMSA-PSS
+  use: sig
 
 PS512: &SHA512WITHRSAMGF1
   alg: PS512
   kty: RSA
   dig: sha512
-  pad: mgf1
+  pad: EMSA-PSS
+  use: sig
+
+PS256-SHA3:
+  alg: PS256-SHA3
+  kty: RSA
+  dig: sha3_256
+  pad: EMSA-PSS
+  use: sig
+
+PS384-SHA3:
+  alg: PS384-SHA3
+  kty: RSA
+  dig: sha3_384
+  pad: EMSA-PSS
+  use: sig
+
+PS512-SHA3:
+  alg: PS512-SHA3
+  kty: RSA
+  dig: sha3_512
+  pad: EMSA-PSS
+  use: sig
 
 ES256:
   alg: ES256
@@ -41,6 +89,7 @@ ES256:
   crv: P-256
   dig: sha256
   raw: false
+  use: sig
 
 ES384:
   alg: ES384
@@ -48,6 +97,7 @@ ES384:
   crv: P-384
   dig: sha384
   raw: false
+  use: sig
 
 ES512:
   alg: ES512
@@ -55,6 +105,31 @@ ES512:
   crv: P-521
   dig: sha512
   raw: false
+  use: sig
+
+ES256-SHA3:
+  alg: ES256-SHA3
+  kty: EC
+  crv: P-256
+  dig: sha3_256
+  raw: false
+  use: sig
+
+ES384-SHA3:
+  alg: ES384-SHA3
+  kty: EC
+  crv: P-384
+  dig: sha3_384
+  raw: false
+  use: sig
+
+ES512-SHA3:
+  alg: ES512-SHA3
+  kty: EC
+  crv: P-521
+  dig: sha3_512
+  raw: false
+  use: sig
 
 BS256:
   alg: BS256
@@ -62,6 +137,7 @@ BS256:
   crv: B-256
   dig: sha256
   raw: false
+  use: sig
 
 BS384:
   alg: BS384
@@ -69,6 +145,7 @@ BS384:
   crv: B-384
   dig: sha384
   raw: false
+  use: sig
 
 BS512:
   alg: BS512
@@ -76,6 +153,31 @@ BS512:
   crv: B-512
   dig: sha512
   raw: false
+  use: sig
+
+BS256-SHA3:
+  alg: BS256-SHA3
+  kty: EC
+  crv: B-256
+  dig: sha3_256
+  raw: false
+  use: sig
+
+BS384-SHA3:
+  alg: BS384-SHA3
+  kty: EC
+  crv: B-384
+  dig: sha3_384
+  raw: false
+  use: sig
+
+BS512-SHA3:
+  alg: BS512-SHA3
+  kty: EC
+  crv: B-512
+  dig: sha3_512
+  raw: false
+  use: sig
 
 ES256K:
   alg: ES256K
@@ -83,6 +185,55 @@ ES256K:
   crv: P-256K
   dig: sha256
   raw: false
+  use: sig
+
+HS256:
+  alg: HS256
+  kty: oct
+  dig: sha256
+  use: sig
+
+HS384:
+  alg: HS384
+  kty: oct
+  dig: sha384
+  use: sig
+
+HS512:
+  alg: HS512
+  kty: oct
+  dig: sha512
+  use: sig
+
+HS256-SHA3:
+  alg: HS256
+  kty: oct
+  dig: sha3_256
+  use: sig
+
+HS384-SHA3:
+  alg: HS384
+  kty: oct
+  dig: sha3_384
+  use: sig
+
+HS512-SHA3:
+  alg: HS512
+  kty: oct
+  dig: sha3_512
+  use: sig
+
+HB256:
+  alg: HB256
+  kty: oct
+  dig: blake2s256
+  use: sig
+
+HB512:
+  alg: HB512
+  kty: oct
+  dig: blake2b512
+  use: sig
 
 #1.2.840.113549.1.1.11: *SHA256WITHRSA
 #1.2.840.113549.1.1.12: *SHA384WITHRSA

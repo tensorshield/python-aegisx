@@ -77,6 +77,9 @@ class ECDSASigningAlgorithm(SigningAlgorithm, EllipticCurveAlgorithm):
                 self._get_signature_algorithm(h, message, prehashed)
             )
             return True
+        except ValueError:
+            # Invalid message length:
+            return False
         except InvalidSignature:
             return False
 

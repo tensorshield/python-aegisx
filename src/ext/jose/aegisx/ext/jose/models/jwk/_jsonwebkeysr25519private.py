@@ -53,6 +53,7 @@ class JSONWebKeySR25519Private(JSONWebKeySR25519Public):
             'd': Base64(private)
         })
 
+
     @classmethod
     def create_from_private_key(cls, k: str | bytes, ss58_format: int = 42):
         if isinstance(k, str) and str.startswith(k, '0x'):

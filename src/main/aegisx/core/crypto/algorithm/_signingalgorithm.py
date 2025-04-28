@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Literal
 
 import pydantic
 
@@ -7,7 +7,9 @@ from ._base import BaseAlgorithm
 
 
 class SigningAlgorithm(BaseAlgorithm):
-    use: ClassVar[str] = 'sig'
+    use: Literal['sig'] = pydantic.Field(
+        default=...
+    )
 
     dig: DigestAlgorithm | None = pydantic.Field(
         default=None
