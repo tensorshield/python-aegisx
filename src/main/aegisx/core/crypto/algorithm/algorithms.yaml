@@ -254,6 +254,20 @@ RSA-OAEP-256:
   dig: sha256
   use: enc
 
+RSA-OAEP-384:
+  alg: RSA-OAEP-384
+  kty: RSA
+  pad: RSAES-OAEP
+  dig: sha384
+  use: enc
+
+RSA-OAEP-512:
+  alg: RSA-OAEP-512
+  kty: RSA
+  pad: RSAES-OAEP
+  dig: sha512
+  use: enc
+
 A128KW:
   alg: A128KW
   kty: oct

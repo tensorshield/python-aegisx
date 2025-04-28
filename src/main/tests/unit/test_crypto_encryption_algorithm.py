@@ -14,6 +14,7 @@ RSA_NAMED_ALGORITHMS = [
     "RSA1_5",
     "RSA-OAEP",
     "RSA-OAEP-256",
+    "RSA-OAEP-384",
     #"RSA-OAEP-512",
 ]
 
