@@ -17,6 +17,7 @@ from cryptography.hazmat.primitives.asymmetric.x25519 import X25519PublicKey
 from aegisx.types import DigestAlgorithm
 from aegisx.types import EncryptionResult
 from aegisx.types import SymmetricEncryptionKey
+from ._aescbcencryptionalgorithm import AESCBCEncryptionAlgorithm
 from ._aesgcmwrapencryptionalgorithm import AESGCMWrapEncryptionAlgorithm
 from ._aeskeywrapencryptionalgorithm import AESKeyWrapEncryptionAlgorithm
 from ._ecdsasigningalgorithm import ECDSASigningAlgorithm
@@ -34,6 +35,7 @@ DEFAULT_ALGORITHM_SPEC = pathlib.Path(__file__).parent.joinpath('algorithms.yaml
 class Algorithm(
     pydantic.RootModel[
         Union[
+            AESCBCEncryptionAlgorithm,
             AESGCMWrapEncryptionAlgorithm,
             AESKeyWrapEncryptionAlgorithm,
             ECDSASigningAlgorithm,

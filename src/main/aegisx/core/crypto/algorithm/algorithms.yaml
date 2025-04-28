@@ -322,6 +322,57 @@ A256GCMKW:
   iv: 12
   use: enc
 
+A128GCM:
+  alg: A128GCM
+  kty: oct
+  cip: AES+GCM
+  len: 16
+  iv: 12
+  use: enc
+
+A192GCM:
+  alg: A192GCM
+  kty: oct
+  cip: AES+GCM
+  len: 24
+  iv: 12
+  use: enc
+
+A256GCM:
+  alg: A256GCM
+  kty: oct
+  cip: AES+GCM
+  len: 32
+  iv: 12
+  use: enc
+
+A128CBC-HS256:
+  alg: A128CBC-HS256
+  kty: oct
+  cip: AES+CBC
+  len: 32
+  iv: 16
+  dig: sha256
+  use: enc
+
+A192CBC-HS384:
+  alg: A192CBC-HS384
+  kty: oct
+  cip: AES+CBC
+  len: 48
+  iv: 16
+  dig: sha384
+  use: enc
+
+A256CBC-HS512:
+  alg: A256CBC-HS512
+  kty: oct
+  cip: AES+CBC
+  len: 64
+  iv: 16
+  dig: sha512
+  use: enc
+
 #1.2.840.113549.1.1.11: *SHA256WITHRSA
 #1.2.840.113549.1.1.12: *SHA384WITHRSA
 #1.2.840.113549.1.1.13: *SHA512WITHRSA

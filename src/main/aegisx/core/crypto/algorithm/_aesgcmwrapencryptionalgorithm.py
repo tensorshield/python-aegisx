@@ -67,7 +67,7 @@ class AESGCMWrapEncryptionAlgorithm(EncryptionAlgorithm):
         plaintext: bytes,
         aad: bytes | None = None
     ):
-        iv = secrets.token_bytes(12)
+        iv = secrets.token_bytes(self.iv)
         c = Cipher(
             algorithm=algorithms.AES(key.k),
             mode=modes.GCM(iv)
@@ -78,7 +78,7 @@ class AESGCMWrapEncryptionAlgorithm(EncryptionAlgorithm):
         result = EncryptionResult(
             ct=enc.update(plaintext) + enc.finalize(),
             iv=iv,
-            aad=aad,
+            aad=aad or b'',
             tag=enc.tag
         )
         return result

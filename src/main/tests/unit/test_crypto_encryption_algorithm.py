@@ -24,6 +24,12 @@ SYMMETRIC_NAMED_ALGORITHMS = [
     'A128GCMKW',
     'A192GCMKW',
     'A256GCMKW',
+    'A128GCM',
+    'A192GCM',
+    'A256GCM',
+    'A128CBC-HS256',
+    'A192CBC-HS384',
+    'A256CBC-HS512',
 ]
 
 ECDH_NAMED_ALGORITHMS = [
@@ -67,7 +73,17 @@ def test_sym_encrypt_named(
 
 
 @pytest.mark.parametrize("aad", [None, b'Hello world!'])
-@pytest.mark.parametrize("name", ["A128GCMKW", "A192GCMKW", "A256GCMKW"])
+@pytest.mark.parametrize("name", [
+    "A128GCMKW",
+    "A192GCMKW",
+    "A256GCMKW",
+    "A128GCM",
+    "A192GCM",
+    "A256GCM",
+    "A128CBC-HS256",
+    "A192CBC-HS384",
+    "A256CBC-HS512",
+])
 def test_sym_encrypt_aad_named(
     name: str,
     aad: bytes | None
