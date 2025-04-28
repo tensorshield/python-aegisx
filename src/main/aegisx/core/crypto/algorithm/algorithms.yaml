@@ -235,6 +235,93 @@ HB512:
   dig: blake2b512
   use: sig
 
+RSA1_5:
+  alg: RSA1_5
+  kty: RSA
+  pad: EMSA-PKCS1-v1_5
+  use: enc
+
+RSA-OAEP:
+  alg: RSA-OAEP
+  kty: RSA
+  pad: RSAES-PKCS1-v1_5
+  use: enc
+
+RSA-OAEP-256:
+  alg: RSA-OAEP-256
+  kty: RSA
+  pad: RSAES-OAEP
+  dig: sha256
+  use: enc
+
+A128KW:
+  alg: A128KW
+  kty: oct
+  cip: AESWRAP
+  len: 16
+  use: enc
+
+A192KW:
+  alg: A192KW
+  kty: oct
+  cip: AESWRAP
+  len: 24
+  use: enc
+
+A256KW:
+  alg: A256KW
+  kty: oct
+  cip: AESWRAP
+  len: 24
+  use: enc
+
+ECDH-ES:
+  alg: ECDH-ES
+  kdf: NIST-800-56-Concatenation-KDF
+  use: enc
+
+ECDH-ES+A128KW:
+  alg: ECDH-ES+A128KW
+  kdf: NIST-800-56-Concatenation-KDF
+  wrp: A128KW
+  use: enc
+
+ECDH-ES+A192KW:
+  alg: ECDH-ES+A192KW
+  kdf: NIST-800-56-Concatenation-KDF
+  wrp: A192KW
+  use: enc
+
+ECDH-ES+A256KW:
+  alg: ECDH-ES+A256KW
+  kdf: NIST-800-56-Concatenation-KDF
+  wrp: A256KW
+  use: enc
+
+A128GCMKW:
+  alg: A128GCMKW
+  kty: oct
+  cip: AES+GCM
+  len: 16
+  iv: 12
+  use: enc
+
+A192GCMKW:
+  alg: A192GCMKW
+  kty: oct
+  cip: AES+GCM
+  len: 24
+  iv: 12
+  use: enc
+
+A256GCMKW:
+  alg: A256GCMKW
+  kty: oct
+  cip: AES+GCM
+  len: 32
+  iv: 12
+  use: enc
+
 #1.2.840.113549.1.1.11: *SHA256WITHRSA
 #1.2.840.113549.1.1.12: *SHA384WITHRSA
 #1.2.840.113549.1.1.13: *SHA512WITHRSA

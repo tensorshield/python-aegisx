@@ -1,0 +1,4 @@
+
+
+class Undecryptable(Exception):
+    pass

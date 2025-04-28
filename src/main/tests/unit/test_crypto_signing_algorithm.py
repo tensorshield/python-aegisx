@@ -15,6 +15,45 @@ def rsa_key():
     return rsa.generate_private_key(key_size=1024, public_exponent=65537)
 
 
+@pytest.mark.parametrize("name", [
+    'ES256',
+    'ES384',
+    'ES512',
+    'BS256',
+    'BS384',
+    'BS512',
+    'ES256-SHA3',
+    'ES384-SHA3',
+    'ES512-SHA3',
+    'BS256-SHA3',
+    'BS384-SHA3',
+    'BS512-SHA3',
+    'RS256',
+    'RS384',
+    'RS512',
+    'PS256',
+    'PS384',
+    'PS512',
+    'RS256-SHA3',
+    'RS384-SHA3',
+    'RS512-SHA3',
+    'PS256-SHA3',
+    'PS384-SHA3',
+    'PS512-SHA3',
+    'HS256',
+    'HS384',
+    'HS512',
+    'HB256',
+    'HB512',
+    'HS256-SHA3',
+    'HS384-SHA3',
+    'HS512-SHA3',
+])
+def test_fromstring(name: str):
+    alg = Algorithm.model_validate(name)
+    assert alg.root.name == name
+
+
 @pytest.mark.parametrize("params", [
     {'name': 'ES256'},
     {'name': 'ES384'},

@@ -3,6 +3,7 @@ from typing import Self
 
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric.padding import MGF1
+from cryptography.hazmat.primitives.asymmetric.padding import OAEP
 from cryptography.hazmat.primitives.asymmetric.padding import PKCS1v15
 from cryptography.hazmat.primitives.asymmetric.padding import PSS
 import pydantic
@@ -18,7 +19,9 @@ class PaddingAlgorithm(OIDMapped):
     __module__: str = 'aegisx.types'
     __oid__mapping__ = {
         'EMSA-PKCS1-v1_5'   : ('name', 'EMSA-PKCS1-v1_5'),
-        'EMSA-PSS'          : ('name', 'EMSA-PSS')
+        'EMSA-PSS'          : ('name', 'EMSA-PSS'),
+        'RSAES-OAEP'        : ('name', 'RSAES-OAEP'),
+        'RSAES-PKCS1-v1_5'  : ('name', 'RSAES-PKCS1-v1_5')
     }
 
     @classmethod
@@ -56,14 +59,26 @@ class PaddingAlgorithm(OIDMapped):
         self.name = name
         self.oid = oid
 
-    def padding(self, h: hashes.HashAlgorithm):
+    def padding(self, h: hashes.HashAlgorithm | None = None):
         match self.name:
             case 'EMSA-PKCS1-v1_5':
                 return PKCS1v15()
             case 'EMSA-PSS':
+                if h is None:
+                    raise TypeError(f'{self.name} requires a hash algorithm.')
                 return PSS(
                     mgf=MGF1(h),
                     salt_length=PSS.MAX_LENGTH
+                )
+            case 'RSAES-PKCS1-v1_5':
+                return PKCS1v15()
+            case 'RSAES-OAEP':
+                if h is None:
+                    raise TypeError(f'{self.name} requires a hash algorithm.')
+                return OAEP(
+                    mgf=MGF1(h),
+                    algorithm=type(h)(),
+                    label=None
                 )
             case _:
                 raise NotImplementedError(self.name)

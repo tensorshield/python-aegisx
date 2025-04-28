@@ -15,7 +15,6 @@ class RSASigningAlgorithm(SigningAlgorithm):
         default=None
     )
 
-
     pad: PaddingAlgorithm = pydantic.Field(
         default=...
     )
